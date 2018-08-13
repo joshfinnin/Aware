@@ -25,6 +25,22 @@ class Project:
         self.disciplines = {}
         settings.Projects[name] = self
 
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, name):
+        self.__name = name
+
+    @property
+    def project_path(self):
+        return self.__project_path
+
+    @project_path.setter
+    def project_path(self, project_path):
+        self.__project_path = project_path
+
 
 class DisciplineSetting:
     """Object containing the settings for each discipline"""

@@ -39,11 +39,73 @@ class DisciplineSetting:
         # Update global settings list once DisciplineSetting object is created
         self.project.disciplines[d_name] = self
 
+    @property
+    def project(self):
+        return self.__project
 
-def create_setting_file(settings):
+    @project.setter
+    def project(self, project):
+        self.__project = project
+
+    @property
+    def d_name(self):
+        return self.__d_name
+
+    @d_name.setter
+    def d_name(self, d_name):
+        self.__d_name = d_name
+
+    @property
+    def prefix(self):
+        return self.__prefix
+
+    @prefix.setter
+    def prefix(self, prefix):
+        if not isinstance(prefix, str):
+            print("Prefix should be one or more characters of the alphabet.  "
+                  "Numbers and/or special characters should be avoided.")
+        else:
+            self.__prefix = prefix
+
+    @property
+    def src_folder(self):
+        return self.__src_folder
+
+    @src_folder.setter
+    def src_folder(self, src_folder):
+        self.src_folder = src_folder
+
+    @property
+    def dst_folder(self):
+        return self.__dst_folder
+
+    @dst_folder.setter
+    def dst_folder(self, dst_folder):
+        self.__dst_folder = dst_folder
+
+    @property
+    def ss_folder(self):
+        return self.__ss_folder
+
+    @ss_folder.setter
+    def ss_folder(self, ss_folder):
+        self.__ss_folder = ss_folder
+
+    @property
+    def file_types(self):
+        return self.__file_types
+
+    @file_types.setter
+    def file_types(self, file_types):
+        self.__file_types = file_types
+
+
+    def update_setting(self, parameter, value):
+
+
+def create_setting_file(settings, settings_file_path):
     """Function for creating a setting file to retain data for all disciplines"""
-    file_path = settings.FILE_PATH
-    with open(file_path, 'w+') as settings_file:
+    with open(settings_file_path, 'w+') as settings_file:
         settings_lines = []
         headers = ("Discipline", "Prefix", "Source", "Destination", "Superseded", "File Types")
         headers_joined = ",".join(headers) + "\n"
@@ -106,6 +168,11 @@ def create_project_data_folder(project_folder_path):
     folder_name = extract_folder_name(project_folder_path)
     project_data_folder = PROJECT_DATA_FOLDER + "\\" + folder_name
     makedirs(project_data_folder)
+
+
+def create_settings_file_path(project_folder_path):
+    settings_file_path = project_folder_path + "\\update_settings.csv"
+    return settings_file_path
 
 
 def get_project_folder_path(project):

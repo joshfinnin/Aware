@@ -31,7 +31,7 @@ class UpdateInterface:
 
         load_settings_button = ttk.Button(frame)
         load_settings_button.config(text="Load settings")
-        load_settings_button.config(command=set_settings_file)
+        load_settings_button.config(command=load_settings_file)
         load_settings_button.grid(column=1, row=4, columnspan=2, rowspan=1)
 
         update_button = ttk.Button(frame)
@@ -93,7 +93,7 @@ class DisciplineInterface:
 
         destination_button = ttk.Button(tab)
         destination_button.config(text="Set Destination Folder")
-        destination_button.grid(column=1, row=5, columnspan=1, rowspan=2, padx=10, pady=22)
+        destination_button.grid(column=1, row=5, columnspan=1, rowspan=2, padx=10, pady=20)
 
         superseded_button = ttk.Button(tab)
         superseded_button.config(text="Set Superseded Folder")
@@ -114,15 +114,13 @@ class DisciplineInterface:
 
 
 def save_settings():
-    global settings_file_path
-
-    # Critical method to get right
-    # Needs to remove whatever other project/settings objects are currently in existence, reinstantiate those objects,
-    # and save over the existing settings file if it does not currently exist
+    global project_folder_path, settings_file_path
+    settings_file_path = create_settings_file_path(project_folder_path)
+    create_setting_file(settings, settings_file_path)
     pass
 
 
-def set_settings_file():
+def load_settings_file():
     global settings_file_path
     settings_file_path = fd.askopenfilename()
     load_discipline_settings_file(settings_file_path)
@@ -137,13 +135,11 @@ def set_project_folder():
 
 settings = Settings("C:\\Users\\josh.finnin\\Desktop\\ACU")
 
-
 tabs = ["Structures", "Architecture", "Mechanical", "Electrical", "Hydraulic", "Fire", "Facades", "Civil", "Geotechnical"]
 
 if __name__ == "__main__":
-    program_data_folder = "C:\\ProgramData\\Aware"
-    if not os.path.exists(program_data_folder):
-        os.makedirs(program_data_folder)
+    if not os.path.exists(PROJECT_DATA_FOLDER):
+        os.makedirs(PROJECT_DATA_FOLDER)
     root = Tk()
     update_frame = UpdateInterface(root)
     discipline_frame = DisciplineInterface(root, tabs)

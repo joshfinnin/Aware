@@ -3,7 +3,7 @@
 from os import path, walk, makedirs
 import csv
 
-PROJECT_DATA_FOLDER = "C:\\ProgramData\\Aware"
+PROJECT_DATA_FOLDER = "C:/ProgramData/Aware"
 
 
 class Settings:
@@ -14,7 +14,7 @@ class Settings:
 
     def __init__(self, folder):
         Settings.SETTING_FOLDER = folder
-        Settings.FILE_PATH = folder + "\\" + "update_settings.csv"
+        Settings.FILE_PATH = folder + "/" + "update_settings.csv"
 
 
 class Project:
@@ -23,7 +23,7 @@ class Project:
         self.name = name
         self.project_path = p_path
         self.disciplines = {}
-        settings.Projects[name] = self
+        settings.Projects[self.name] = self
 
     @property
     def name(self):
@@ -78,8 +78,8 @@ class DisciplineSetting:
     @prefix.setter
     def prefix(self, prefix):
         if not isinstance(prefix, str):
-            print("Prefix should be one or more characters of the alphabet.  "
-                  "Numbers and/or special characters should be avoided.")
+            print("Prefix should be one or more characters of the alphabet. "
+                  "Numbers and/or special characters should not be used.")
         else:
             self.__prefix = prefix
 
@@ -89,7 +89,7 @@ class DisciplineSetting:
 
     @src_folder.setter
     def src_folder(self, src_folder):
-        self.src_folder = src_folder
+        self.__src_folder = src_folder
 
     @property
     def dst_folder(self):
@@ -115,29 +115,30 @@ class DisciplineSetting:
     def file_types(self, file_types):
         self.__file_types = file_types
 
-
     def update_setting(self, parameter, value):
+        pass
 
 
 def create_setting_file(settings, settings_file_path):
     """Function for creating a setting file to retain data for all disciplines"""
-    with open(settings_file_path, 'w+') as settings_file:
-        settings_lines = []
-        headers = ("Discipline", "Prefix", "Source", "Destination", "Superseded", "File Types")
-        headers_joined = ",".join(headers) + "\n"
-        settings_lines.append(headers_joined)
-        for ds in settings.Disciplines.values():
-            name = ds.d_name
-            prefix = ds.prefix
-            src_folder = ds.src_folder
-            dst_folder = ds.dst_folder
-            ss_folder = ds.ss_folder
-            file_types = ds.file_types
-            file_types = "/".join(file_types)  # Ensure the list of file types is aggregated into a single string
-            setting_vars = (name, prefix, src_folder, dst_folder, ss_folder, file_types)
-            setting_string = ",".join(setting_vars) + "\n"
-            settings_lines.append(setting_string)
-        settings_file.writelines(settings_lines)
+    settings_file = open(settings_file_path, 'w+')
+    settings_lines = []
+    headers = ("Discipline", "Prefix", "Source", "Destination", "Superseded", "File Types")
+    headers_joined = ",".join(headers) + "\n"
+    settings_lines.append(headers_joined)
+    for ds in settings.Disciplines.values():
+        name = ds.d_name
+        prefix = ds.prefix
+        src_folder = ds.src_folder
+        dst_folder = ds.dst_folder
+        ss_folder = ds.ss_folder
+        file_types = ds.file_types
+        file_types = "/".join(file_types)  # Ensure the list of file types is aggregated into a single string
+        setting_vars = (name, prefix, src_folder, dst_folder, ss_folder, file_types)
+        setting_string = ",".join(setting_vars) + "\n"
+        settings_lines.append(setting_string)
+    settings_file.writelines(settings_lines)
+    settings_file.close()
 
 
 def load_discipline_settings_file(file_path):
@@ -167,37 +168,39 @@ def load_discipline_settings_file(file_path):
 def implicit_load_project_settings():
     for dir, dirname, file_names in walk(PROJECT_DATA_FOLDER):
         project_folder_name = dirname[:3] + "000"
-        project_folder = "J:\\{parent}\\{project}\\Work//Internal\\BIM_CDE".format(parent=project_folder_name,
+        project_folder = "J:/{parent}/{project}/Work//Internal/BIM_CDE".format(parent=project_folder_name,
                                                                                    project=dirname)
-        settings_file = project_folder + "\\update_settings.csv"
+        settings_file = project_folder + "/update_settings.csv"
         load_discipline_settings_file(settings_file)
 
 
 def extract_folder_name(path):
     """Takes the BIM_CDE project folder path. Returns the project folder name."""
-    fragments = path.split("\\")
+    fragments = path.split("/")
     folder = fragments[2]
     return folder
 
 
 def create_project_data_folder(project_folder_path):
     folder_name = extract_folder_name(project_folder_path)
-    project_data_folder = PROJECT_DATA_FOLDER + "\\" + folder_name
-    makedirs(project_data_folder)
+    project_data_folder = PROJECT_DATA_FOLDER + "/" + folder_name
+    if not path.isdir(project_data_folder):
+        makedirs(project_data_folder)
 
 
 def create_settings_file_path(project_folder_path):
-    settings_file_path = project_folder_path + "\\update_settings.csv"
+    settings_file_path = project_folder_path + "/update_settings.csv"
     return settings_file_path
 
 
-def get_project_folder_path(project):
-    project_folder_name = project[:3] + "000"
-    project_folder = "J:\\{parent}\\{project}\\Work//Internal\\BIM_CDE".format(parent=project_folder_name,
-                                                                               project=project)
+def get_project_folder_path(project_folder_name):
+    parent = project_folder_name[:3] + "000"
+    project_folder = "J:/{parent}/{project}/Work//Internal/BIM_CDE".format(parent=parent,
+                                                                           project=project_folder_name)
     return project_folder
 
-settings = Settings("C:\\Users\\josh.finnin\\Desktop\\ACU")
+
+settings = Settings("C:/Users/josh.finnin/Desktop/ACU")
 
 # Test functionality
 

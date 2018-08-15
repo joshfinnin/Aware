@@ -27,6 +27,7 @@ class UpdateInterface:
 
         save_settings_button = ttk.Button(frame)
         save_settings_button.config(text="Save settings")
+        save_settings_button.config(command=save_settings)
         save_settings_button.grid(column=1, row=3, columnspan=2, rowspan=1)
 
         load_settings_button = ttk.Button(frame)
@@ -99,6 +100,8 @@ class DisciplineInterface:
         superseded_button.config(text="Set Superseded Folder")
         superseded_button.grid(column=1, row=6, columnspan=3, rowspan=2, padx=10, pady=20)
 
+        print(tab.children)
+
     def create_notebook(self):
         notebook = ttk.Notebook(master=self.master)
         for tab in self.tab_names:
@@ -113,11 +116,20 @@ class DisciplineInterface:
 # Let me refresh my memory about how this patter works
 
 
+def grab_discipline_settings(notebook, tab_names):
+    """Function for capturing the current state of discipline settings.  To be used when settings are saved,
+    or the update function is run"""
+    for tname in tab_names:
+        tab = notebook.children[tname]
+        active_button = tab.children[]
+
 def save_settings():
     global project_folder_path, settings_file_path
-    settings_file_path = create_settings_file_path(project_folder_path)
-    create_setting_file(settings, settings_file_path)
-    pass
+    try:
+        settings_file_path = create_settings_file_path(project_folder_path)
+        create_setting_file(settings, settings_file_path)
+    except NameError:
+        print("Please ensure you have selected a project folder before saving your settings.")
 
 
 def load_settings_file():
@@ -129,11 +141,12 @@ def load_settings_file():
 def set_project_folder():
     global project_folder_path
     project_folder_path = fd.askdirectory()
-    # Create the project folder
+    folder_name = extract_folder_name(project_folder_path)
+    project_folder_path = get_project_folder_path(folder_name)
     create_project_data_folder(project_folder_path)
 
 
-settings = Settings("C:\\Users\\josh.finnin\\Desktop\\ACU")
+settings = Settings("C:/Users/josh.finnin/Desktop/ACU")
 
 tabs = ["Structures", "Architecture", "Mechanical", "Electrical", "Hydraulic", "Fire", "Facades", "Civil", "Geotechnical"]
 

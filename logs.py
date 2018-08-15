@@ -8,7 +8,7 @@ from getpass import getuser
 def update_log(settings):
     """Function that creates/updates a log file for every time the drawings are updated"""
     folder = settings.SETTING_FOLDER
-    log_file_path = folder + "\\" + "log_file.csv"
+    log_file_path = folder + "/" + "log_file.csv"
     # Create log file if it does not already exist
     if not path.isfile(log_file_path):
         with open(log_file_path, 'w+') as log_file:

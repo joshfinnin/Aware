@@ -44,14 +44,14 @@ class Project:
 
 class DisciplineSetting:
     """Object containing the settings for each discipline"""
-    def __init__(self, project, d_name, prefix, src_folder, dst_folder, ss_folder, file_types):
+    def __init__(self, project, d_name):
         self.project = project
         self.d_name = d_name
-        self.prefix = prefix
-        self.src_folder = src_folder
-        self.dst_folder = dst_folder
-        self.ss_folder = ss_folder
-        self.file_types = file_types
+        self.prefix = ""  # Used an emptry string as using None type was triggering the warning for non-string type
+        self.src_folder = None
+        self.dst_folder = None
+        self.ss_folder = None
+        self.file_types = None
         # Update global settings list once DisciplineSetting object is created
         self.project.disciplines[d_name] = self
 

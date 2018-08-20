@@ -65,22 +65,13 @@ class DisciplineInterface:
     @staticmethod
     def create_tab_content(tab):
         """Use function to populate tabs with the necessary content"""
-        # Things that tabs need to have:
-        # TODO: Radio button to activate discipline
-        # TODO: Text field for drawing prefix
-        # TODO: FD button for source folder
-        # TODO: FD button for destination folder
-        # TODO: FD button for superseded folder
-        # TODO: Checklist for tile types that can be accepted
-
-        # Just realised that each tab needs to instantiate the DisciplineSetting object for it's Discipline to
-        # capture the setting data
 
         activate = BooleanVar()
 
         check_button = ttk.Checkbutton(tab)
         check_button.config(text="Active?")
         check_button.config(variable=activate)
+        # TODO: Radio button to activate discipline
         check_button.grid(column=1, row=1, columnspan=1, rowspan=1, pady=20, padx=10)
         check_button.var = activate
 
@@ -88,20 +79,26 @@ class DisciplineInterface:
         prefix_label.config(text="Specify Drawing Prefix", anchor=E)
         prefix_label.grid(column=1, row=2, columnspan=3, rowspan=1)
         drawing_prefix_field = ttk.Entry(tab)
+        # TODO: Text field for drawing prefix
         drawing_prefix_field.grid(column=1, row=3, columnspan=3, rowspan=1, padx=10, pady=5)
 
         source_button = ttk.Button(tab)
         source_button.config(text="Set Source Folder")
-        source_button.config(command=set_folder)
+        wrap_folder_button(source_button, set_folder)
         source_button.grid(column=1, row=4, columnspan=1, rowspan=2, padx=10, pady=25)
 
         destination_button = ttk.Button(tab)
         destination_button.config(text="Set Destination Folder")
+        wrap_folder_button(destination_button, set_folder)
         destination_button.grid(column=1, row=5, columnspan=1, rowspan=2, padx=10, pady=20)
 
         superseded_button = ttk.Button(tab)
         superseded_button.config(text="Set Superseded Folder")
+        wrap_folder_button(superseded_button, set_folder)
         superseded_button.grid(column=1, row=6, columnspan=3, rowspan=2, padx=10, pady=20)
+
+        # TODO: Checklist for tile types that can be accepted
+
 
     def create_notebook(self):
         notebook = ttk.Notebook(master=self.master)
@@ -126,23 +123,52 @@ def grab_discipline_settings(notebook, tab_names, project_folder_path):
         active_button = tab.children['!checkbutton']
         active = active_button.var
         if active:
+            # Change the way these functions are working
+            # Create the Discipline object separately, and then access the properties of the objects here
             prefix_raw = tab.children['!entry'].get()
             prefix = prefix_raw.strip()  # Ensure whitespace hasn't contaminated the prefix
-            src_folder = ""
-            d_setting = DisciplineSetting(project, t_name, prefix, src, dst, ss, f_types)
+            d_setting = DisciplineSetting(project, t_name)
 
 
-def set_folder():
+def wrap_folder_button(button, command):
+    button_name = button.cget("text")
+
+    def inner():
+        return command(button_name)
+    button["command"] = inner
+
+
+def get_discipline_name(frame_name):
+    # This function has some quirks due to the naming convention that tkinter uses for it's frames
+    # Had to create a way of mapping tab names to the frame objects
+    # This implementation is far from ideal, but because I don't plan on changing the interface much, I don't think it
+    # poses an enormous problem
+    tab_count_plus_one = len(tabs) + 1
+    tab_suffixes = [str(n) for n in range(2, tab_count_plus_one)]
+    tab_suffixes.insert(0, "")
+    print(tab_suffixes)
+    frames = ['!frame{}'.format(i) for i in tab_suffixes]
+    tab_name_dict = {i: j for i, j in zip(frames, tabs)}
+    return tab_name_dict[frame_name]
+
+
+def set_folder(button_name):
     try:
-        # Use the "get" current approach to work out which discipline is active.
-        # If you know which discipline is active at the time askdirectory() is called, you can append the path to
-        # The relevant dictionary for settings can be created
-        global folder_path_holder
-        folder_path_holder = fd.askdirectory()
+        current = discipline_frame.notebook.select().split('.')[2]
+        discipline_name = get_discipline_name(current)
+        print(discipline_name)
+        folder = fd.askdirectory()  # Grab the folder
+        discipline = DISCIPLINE_SETTINGS[discipline_name]
+        if button_name == "Set Source Folder":
+            discipline.src_folder = folder
+        elif button_name == "Set Destination Folder":
+            discipline.dst_folder = folder
+        elif button_name == "Set Superseded Folder":
+            discipline.ss_folder = folder
     except NameError:
-        print("Please ensure you select a valid directory")
+        print("Please ensure you select a valid directory and have set a project folder")
     except AttributeError:
-        print("Please ensure you select a valid directory")
+        print("Please ensure you select a valid directory and have set a project folder")
 
 
 def save_settings():
@@ -166,12 +192,17 @@ def load_settings_file():
 
 
 def set_project_folder():
-    global project_folder_path
+    global project_folder_path, DISCIPLINE_SETTINGS
     try:
+        DISCIPLINE_SETTINGS = {}
         project_folder_path = fd.askdirectory()
         folder_name = extract_folder_name(project_folder_path)
         project_folder_path = get_project_folder_path(folder_name)
         create_project_data_folder(project_folder_path)
+        project = Project(settings, folder_name, project_folder_path)
+        for tab in tabs:
+            d_setting = DisciplineSetting(project, tab)
+            DISCIPLINE_SETTINGS[tab] = d_setting
     except FileNotFoundError:
         print("Please select a valid directory before proceeding.")
     except IndexError:

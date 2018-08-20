@@ -49,6 +49,7 @@ class DisciplineInterface:
         self.master.minsize(650, 300)
         self.weight_cells()
         self.tab_names = tab_names
+        self.tab_dict = {}
         self.notebook = self.create_notebook()
 
     @staticmethod
@@ -79,8 +80,9 @@ class DisciplineInterface:
 
         check_button = ttk.Checkbutton(tab)
         check_button.config(text="Active?")
-        check_button.config(variable=activate)  # Activate is now associated with the
+        check_button.config(variable=activate)
         check_button.grid(column=1, row=1, columnspan=1, rowspan=1, pady=20, padx=10)
+        check_button.var = activate
 
         prefix_label = ttk.Label(tab)
         prefix_label.config(text="Specify Drawing Prefix", anchor=E)
@@ -90,6 +92,7 @@ class DisciplineInterface:
 
         source_button = ttk.Button(tab)
         source_button.config(text="Set Source Folder")
+        source_button.config(command=set_folder)
         source_button.grid(column=1, row=4, columnspan=1, rowspan=2, padx=10, pady=25)
 
         destination_button = ttk.Button(tab)
@@ -100,28 +103,47 @@ class DisciplineInterface:
         superseded_button.config(text="Set Superseded Folder")
         superseded_button.grid(column=1, row=6, columnspan=3, rowspan=2, padx=10, pady=20)
 
-        print(tab.children)
-
     def create_notebook(self):
         notebook = ttk.Notebook(master=self.master)
         for tab in self.tab_names:
             frame = ttk.Frame(notebook)
             self.create_tab_content(frame)
             notebook.add(frame, text=tab)
+            self.tab_dict[tab] = frame
         notebook.grid(column=2, row=1, columnspan=1, rowspan=1, sticky=NSEW)
         return notebook
 
-# Need a method for capturing the content of many different save/load file buttons at once.
-# I think the best way to do this might be a decorator pattern
-# Let me refresh my memory about how this patter works
+
+def grab_discipline_settings(notebook, tab_names, project_folder_path):
+    """Function for capturing the current state of discipline settings.
+    To be used when settings are saved, or the update function is run"""
+    project_name = extract_folder_name(project_folder_path)
+    project = Project(settings, project_name, project_folder_path)
+    for t_name in tab_names:
+        # Update to access the variables from each discipline to create the DisciplineSetting objects
+        # This function needs to be implemented by both the update button and the save settings button
+        tab = notebook.tab_dict[t_name]
+        active_button = tab.children['!checkbutton']
+        active = active_button.var
+        if active:
+            prefix_raw = tab.children['!entry'].get()
+            prefix = prefix_raw.strip()  # Ensure whitespace hasn't contaminated the prefix
+            src_folder = ""
+            d_setting = DisciplineSetting(project, t_name, prefix, src, dst, ss, f_types)
 
 
-def grab_discipline_settings(notebook, tab_names):
-    """Function for capturing the current state of discipline settings.  To be used when settings are saved,
-    or the update function is run"""
-    for tname in tab_names:
-        tab = notebook.children[tname]
-        active_button = tab.children[]
+def set_folder():
+    try:
+        # Use the "get" current approach to work out which discipline is active.
+        # If you know which discipline is active at the time askdirectory() is called, you can append the path to
+        # The relevant dictionary for settings can be created
+        global folder_path_holder
+        folder_path_holder = fd.askdirectory()
+    except NameError:
+        print("Please ensure you select a valid directory")
+    except AttributeError:
+        print("Please ensure you select a valid directory")
+
 
 def save_settings():
     global project_folder_path, settings_file_path
@@ -130,27 +152,38 @@ def save_settings():
         create_setting_file(settings, settings_file_path)
     except NameError:
         print("Please ensure you have selected a project folder before saving your settings.")
+    except AttributeError:
+        print("Please select settings for at least one discipline before saving.")
 
 
 def load_settings_file():
     global settings_file_path
-    settings_file_path = fd.askopenfilename()
-    load_discipline_settings_file(settings_file_path)
+    try:
+        settings_file_path = fd.askopenfilename()
+        load_discipline_settings_file(settings_file_path)
+    except FileNotFoundError:
+        print("Please select a valid settings file to load from.")
 
 
 def set_project_folder():
     global project_folder_path
-    project_folder_path = fd.askdirectory()
-    folder_name = extract_folder_name(project_folder_path)
-    project_folder_path = get_project_folder_path(folder_name)
-    create_project_data_folder(project_folder_path)
+    try:
+        project_folder_path = fd.askdirectory()
+        folder_name = extract_folder_name(project_folder_path)
+        project_folder_path = get_project_folder_path(folder_name)
+        create_project_data_folder(project_folder_path)
+    except FileNotFoundError:
+        print("Please select a valid directory before proceeding.")
+    except IndexError:
+        print("Please select a valid directory before proceeding.")
 
 
-settings = Settings("C:/Users/josh.finnin/Desktop/ACU")
-
-tabs = ["Structures", "Architecture", "Mechanical", "Electrical", "Hydraulic", "Fire", "Facades", "Civil", "Geotechnical"]
+tabs = ["Structures", "Architecture", "Mechanical", "Electrical", "Hydraulic", "Fire", "Facades", "Civil",
+        "Geotechnical"]
 
 if __name__ == "__main__":
+    # Create the settings object
+    settings = Settings("C:/Users/josh.finnin/Desktop/ACU")
     if not os.path.exists(PROJECT_DATA_FOLDER):
         os.makedirs(PROJECT_DATA_FOLDER)
     root = Tk()

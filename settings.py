@@ -14,7 +14,7 @@ class Settings:
 
     def __init__(self, folder):
         Settings.SETTING_FOLDER = folder
-        Settings.FILE_PATH = folder + "/" + "update_settings.csv"
+        Settings.FILE_PATH = folder + "/update_settings.csv"
 
 
 class Project:
@@ -169,7 +169,7 @@ def implicit_load_project_settings():
     for dir, dirname, file_names in walk(PROJECT_DATA_FOLDER):
         project_folder_name = dirname[:3] + "000"
         project_folder = "J:/{parent}/{project}/Work//Internal/BIM_CDE".format(parent=project_folder_name,
-                                                                                   project=dirname)
+                                                                               project=dirname)
         settings_file = project_folder + "/update_settings.csv"
         load_discipline_settings_file(settings_file)
 
@@ -202,19 +202,4 @@ def get_project_folder_path(project_folder_name):
 
 settings = Settings("C:/Users/josh.finnin/Desktop/ACU")
 
-# Test functionality
-
-# settings = Settings("C:\\Users\\josh.finnin\\Desktop\\ACU")
-
-# d_test = DisciplineSetting("Structures", "S", "C:\\Users\\josh.finnin\\Desktop\\ACU",
-#                            "C:\\Users\\josh.finnin\\Desktop\\ACU",
-#                            "C:\\Users\\josh.finnin\\Desktop\\ACU",
-#                            (".pdf", ".ifc"))
-#
-# d_test2 = DisciplineSetting("Mechanical", "M", "C:\\Users\\josh.finnin\\Desktop\\ACU",
-#                             "C:\\Users\\josh.finnin\\Desktop\\ACU",
-#                             "C:\\Users\\josh.finnin\\Desktop\\ACU",
-#                             (".pdf", ".ifc"))
-#
-# create_setting_file("C:\\Users\\josh.finnin\\Desktop\\ACU", Settings)
 

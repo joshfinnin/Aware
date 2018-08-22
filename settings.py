@@ -41,27 +41,35 @@ class Project:
     def project_path(self, project_path):
         self.__project_path = project_path
 
+# Do we need settings and project classes?  They might be entirely redundant if each Discipline Setting object is going
+# to be created dynamically when a project is loaded anyway, or the settings are collected all at once from the state
+# of the GUI.
+
+# I think I can decouple the DisciplineSetting object from this safely, test it to see if it works, and then
+# remove the redundant classes
+
 
 class DisciplineSetting:
     """Object containing the settings for each discipline"""
-    def __init__(self, project, d_name):
-        self.project = project
+    def __init__(self, d_name):
+        # self.project = project
         self.d_name = d_name
-        self.prefix = ""  # Used an emptry string as using None type was triggering the warning for non-string type
+        self.prefix = ""  # Used an empty string as giving None type was triggering the warning for non-string type
+        self.delimiter = ""
         self.src_folder = None
         self.dst_folder = None
         self.ss_folder = None
         self.file_types = None
         # Update global settings list once DisciplineSetting object is created
-        self.project.disciplines[d_name] = self
+        # self.project.disciplines[d_name] = self
 
-    @property
-    def project(self):
-        return self.__project
-
-    @project.setter
-    def project(self, project):
-        self.__project = project
+    # @property
+    # def project(self):
+    #     return self.__project
+    #
+    # @project.setter
+    # def project(self, project):
+    #     self.__project = project
 
     @property
     def d_name(self):
@@ -82,6 +90,18 @@ class DisciplineSetting:
                   "Numbers and/or special characters should not be used.")
         else:
             self.__prefix = prefix
+
+    @property
+    def delimiter(self):
+        return self.__delimiter
+
+    @delimiter.setter
+    def delimiter(self, delimiter):
+        if not isinstance(delimiter, str):
+            print("Delimiter should be one or more characters of the alphabet. "
+                  "Numbers and/or special characters should not be used.")
+        else:
+            self.__delimiter = delimiter
 
     @property
     def src_folder(self):
@@ -119,22 +139,23 @@ class DisciplineSetting:
         pass
 
 
-def create_setting_file(settings, settings_file_path):
+def create_setting_file(discipline_settings, settings_file_path):
     """Function for creating a setting file to retain data for all disciplines"""
     settings_file = open(settings_file_path, 'w+')
     settings_lines = []
-    headers = ("Discipline", "Prefix", "Source", "Destination", "Superseded", "File Types")
+    headers = ("Discipline", "Prefix", "Delimiter", "Source", "Destination", "Superseded", "File Types")
     headers_joined = ",".join(headers) + "\n"
     settings_lines.append(headers_joined)
-    for ds in settings.Disciplines.values():
+    for ds in discipline_settings.values():
         name = ds.d_name
         prefix = ds.prefix
+        delimiter = ds.delimiter
         src_folder = ds.src_folder
         dst_folder = ds.dst_folder
         ss_folder = ds.ss_folder
         file_types = ds.file_types
         file_types = "/".join(file_types)  # Ensure the list of file types is aggregated into a single string
-        setting_vars = (name, prefix, src_folder, dst_folder, ss_folder, file_types)
+        setting_vars = (name, prefix, delimiter, src_folder, dst_folder, ss_folder, file_types)
         setting_string = ",".join(setting_vars) + "\n"
         settings_lines.append(setting_string)
     settings_file.writelines(settings_lines)
@@ -144,25 +165,30 @@ def create_setting_file(settings, settings_file_path):
 def load_discipline_settings_file(file_path):
     """Function for loading settings data contained in a settings file.
     Creates and populates Project objects with the necessary data from the settings file."""
-    if path.isfile(file_path):
-        project_folder_name = extract_folder_name(file_path)
-        project_folder_path = get_project_folder_path(project_folder_name)
-        project = Project(settings, project_folder_name, project_folder_path)
-        with open(file_path, 'r') as settings_file:
-            setting_dicts = csv.DictReader(settings_file)
-            for ds in setting_dicts:
-                name = ds["Discipline"]
-                prefix = ds["Prefix"]
-                src_folder = ds["Source"]
-                dst_folder = ds["Destination"]
-                ss_folder = ds["Superseded"]
-                file_types = ds["File Types"]
-                file_types = file_types.split("/")
-                # The constructor for each object should automatically update the settings cache dictionary
-                # So shouldn't need to do anything else other than instantiate the objects
-                d_setting = DisciplineSetting(project, name, prefix, src_folder, dst_folder, ss_folder, file_types)
-    else:
-        raise FileNotFoundError
+    # if path.isfile(file_path):
+    #     project_folder_name = extract_folder_name(file_path)
+    #     project_folder_path = get_project_folder_path(project_folder_name)
+    #     project = Project(settings, project_folder_name, project_folder_path)
+    with open(file_path, 'r') as settings_file:
+        setting_dicts = csv.DictReader(settings_file)
+        for ds in setting_dicts:
+            name = ds["Discipline"]
+            prefix = ds["Prefix"]
+            delimiter = ds["Delimiter"]
+            src_folder = ds["Source"]
+            dst_folder = ds["Destination"]
+            ss_folder = ds["Superseded"]
+            file_types = ds["File Types"]
+            file_types = set(file_types.split("/"))
+            d_setting = DisciplineSetting(name)
+            d_setting.prefix = prefix
+            d_setting.delimiter = delimiter
+            d_setting.src_folder = src_folder
+            d_setting.dst_folder = dst_folder
+            d_setting.ss_folder = ss_folder
+            d_setting.file_types = file_types
+    # else:
+    #     raise FileNotFoundError
 
 
 def implicit_load_project_settings():
@@ -198,8 +224,5 @@ def get_project_folder_path(project_folder_name):
     project_folder = "J:/{parent}/{project}/Work//Internal/BIM_CDE".format(parent=parent,
                                                                            project=project_folder_name)
     return project_folder
-
-
-settings = Settings("C:/Users/josh.finnin/Desktop/ACU")
 
 

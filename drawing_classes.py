@@ -1,7 +1,5 @@
 """Class library for updating the current issued drawing folder"""
 
-file_types = {".pdf", ".jpeg", ".ifc", ".dwg", ".dxf", ".3dm"}
-
 
 class DrawingGroup:
     """Class containing the collection of all drawing files related to an individual drawing"""

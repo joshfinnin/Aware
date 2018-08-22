@@ -5,14 +5,16 @@ from time import strftime
 from getpass import getuser
 
 
-def update_log(settings):
-    """Function that creates/updates a log file for every time the drawings are updated"""
-    folder = settings.SETTING_FOLDER
-    log_file_path = folder + "/" + "log_file.csv"
-    # Create log file if it does not already exist
+def get_log_file_path(project_folder_path):
+    log_file_path = project_folder_path + "/log_file.csv"
+    return log_file_path
+
+
+def update_log(log_file_path):
+    """Function that creates or updates a log file every time the drawings are updated"""
     if not path.isfile(log_file_path):
         with open(log_file_path, 'w+') as log_file:
-            log_file.write("Updates,User\n")
+            log_file.write("Date Updated,User\n")
     with open(log_file_path, 'a') as log_file:
         current_time = strftime("%X %x %Z")
         user = getuser()

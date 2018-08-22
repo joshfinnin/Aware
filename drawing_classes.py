@@ -4,7 +4,7 @@
 class DrawingGroup:
     """Class containing the collection of all drawing files related to an individual drawing"""
     def __init__(self, drawing_list):
-        self.drawing_list = list(drawing_list)
+        self.drawing_list = drawing_list
         self.sort_drawing_list()
         self.current_drawing = self.set_current_drawing()
         self.superseded_drawings = self.set_superseded_drawings()

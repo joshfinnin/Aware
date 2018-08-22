@@ -84,9 +84,9 @@ class DisciplineInterface:
 
         check_button = ttk.Checkbutton(tab)
         check_button.config(text="Activate discipline?")
-        check_button.config(variable=tab.activate)
+        check_button.config(variable=activate)
         check_button.place(x=20, y=20)
-        check_button.var = tab.activate
+        check_button.var = activate
 
         prefix_label = Label(tab)
         prefix_label.config(text="Drawing Prefix:", font=("Helvetica", 10, "bold"))
@@ -94,7 +94,7 @@ class DisciplineInterface:
         drawing_prefix_field = ttk.Entry(tab)
         drawing_prefix_field.place(x=130, y=60)
         prefix_description = Label(tab)
-        prefix_description.config(text="(i.e. for drawing name \'S-01-100\', the prefix would be \'S\')",
+        prefix_description.config(text="(i.e. for drawing \'S-01-100\', the prefix would be \'S\')",
                                   font=("Helvetica", 10))
         prefix_description.place(x=20, y=85)
 
@@ -105,7 +105,7 @@ class DisciplineInterface:
         delimiter_field = ttk.Entry(tab)
         delimiter_field.place(x=150, y=125)
         delimiter_description = Label(tab)
-        delimiter_description.config(text="(i.e. for drawing name \'S-01-100[T01]\', the delimiter would be \'[\'",
+        delimiter_description.config(text="(i.e. for drawing \'S-01-100[T01]\', the delimiter would be \'[\')",
                                      font=("Helvetica", 10))
         delimiter_description.place(x=20, y=150)
 
@@ -233,11 +233,11 @@ def grab_discipline_settings(notebook, tab_names):
 
             jpeg_checked = tab.jpeg_bool.get()
             if jpeg_checked:
-                file_types.append(".jpeg")
+                file_types.append('.jpeg')
 
             rhino_checked = tab.rhino_bool.get()
             if rhino_checked:
-                file_types.append(".3dm")
+                file_types.append('.3dm')
 
             d_setting.file_types = file_types
 
@@ -322,6 +322,7 @@ def set_project_folder():
 
 
 def update_drawings():
+    print("Updating drawings...")
     for d_setting in DISCIPLINE_SETTINGS.values():
         update_current_drawing_files(d_setting.src_folder,
                                      d_setting.dst_folder,
@@ -330,6 +331,7 @@ def update_drawings():
                                      d_setting.delimiter,
                                      d_setting.file_types,
                                      PROJECT_FOLDER_PATH)
+    print("Update completed.")
 
 
 tabs = ["Structures", "Architecture", "Mechanical", "Electrical", "Hydraulic", "Fire", "Facades", "Civil",

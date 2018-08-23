@@ -12,12 +12,14 @@ PROJECT_FOLDER_PATH = ""
 SETTINGS_FILE_PATH = ""
 DISCIPLINE_SETTINGS = {}
 DISCIPLINE_COUNT = 0
-DISCIPLINE_FRAME = None
+TABS = ["Structures", "Architecture", "Mechanical", "Electrical", "Hydraulic", "Fire", "Facades", "Civil",
+        "Geotechnical"]
 
 
 class UpdateInterface:
-    def __init__(self, _root):
+    def __init__(self, _root, discipline_interface):
         self.master = _root
+        self.discipline_interface = discipline_interface
         self.create_frame()
 
     def create_frame(self):
@@ -30,7 +32,6 @@ class UpdateInterface:
 
         project_folder_button = ttk.Button(frame)
         project_folder_button.config(text="Set project folder")
-        project_folder_button.config(command=set_project_folder)
         project_folder_button.place(x=0, y=100)
         project_folder_label = Label(frame)
         project_folder_label.config(text="Please select a J drive project folder", font=("Helvetica", 10, "bold"))
@@ -38,17 +39,20 @@ class UpdateInterface:
         project_folder_description = Label(frame)
         project_folder_description.config(text="No folder set", font=("Helvetica", 10, "italic"))
         project_folder_description.place(x=0, y=125)
+        wrap_update_buttons(project_folder_button, project_folder_description, set_project_folder)
 
         settings_label = Label(frame)
         settings_label.config(text="Settings files", font=("Helvetica", 10, "bold"))
         settings_label.place(x=0, y=175)
         save_settings_button = ttk.Button(frame)
         save_settings_button.config(text="Save settings")
-        save_settings_button.config(command=save_settings)
         save_settings_button.place(x=0, y=200)
         save_settings_description = Label(frame)
-        save_settings_description.config(text="Unsaved", font=("Helvetica", 10, "italic"))
+        save_settings_description.config(text="Unsaved", font=("Helvetica", 10, "italic"), justify=LEFT)
         save_settings_description.place(x=0, y=225)
+        wrap_save_settings_buttons(self.discipline_interface, save_settings_button, save_settings_description,
+                                   DisciplineInterface.save_settings)
+
         load_settings_button = ttk.Button(frame)
         load_settings_button.config(text="Load settings")
         load_settings_button.config(command=load_settings_file)
@@ -58,13 +62,14 @@ class UpdateInterface:
         update_label.config(text="Update drawing folders", font=("Helvetica", 10, "bold"))
         update_label.place(x=0, y=325)
         update_button = ttk.Button(frame)
-        update_button.config(text="Update", command=update_drawings)
+        update_button.config(text="Update drawings")
         update_button.place(x=0, y=350)
         update_description = Label(frame)
-        update_description.config(text="No update performed", font=("Helvetica", 10, "italic"))
+        update_description.config(text="No update performed", font=("Helvetica", 10, "italic"), justify=LEFT)
         update_description.place(x=0, y=375)
+        wrap_update_buttons(update_button, update_description, update_drawings)
 
-        frame.place(x=0, y=0, width=275, height=500)
+        frame.place(x=0, y=0, width=400, height=500)
 
 
 class DisciplineInterface:
@@ -130,7 +135,7 @@ class DisciplineInterface:
         source_button_description.config(text="Folder to search for current drawings", font=("Helvetica", 10, "italic"))
         source_button_description.place(x=170, y=220)
         tab.src_folder = StringVar()
-        wrap_folder_button(source_button, source_button_description, activate, tab.src_folder, set_folder)
+        wrap_folder_buttons(source_button, source_button_description, activate, tab.src_folder, set_folder)
 
         destination_button = ttk.Button(tab)
         destination_button.config(text="Set Destination Folder")
@@ -139,7 +144,7 @@ class DisciplineInterface:
         destination_button_description.config(text="Folder to store current drawings", font=("Helvetica", 10, "italic"))
         destination_button_description.place(x=170, y=250)
         tab.dst_folder = StringVar()
-        wrap_folder_button(destination_button, destination_button_description, activate, tab.dst_folder, set_folder)
+        wrap_folder_buttons(destination_button, destination_button_description, activate, tab.dst_folder, set_folder)
 
         superseded_button = ttk.Button(tab)
         superseded_button.config(text="Set Superseded Folder")
@@ -148,7 +153,7 @@ class DisciplineInterface:
         superseded_button_description.config(text="Folder to send superseded drawings", font=("Helvetica", 10, "italic"))
         superseded_button_description.place(x=170, y=280)
         tab.ss_folder = StringVar()
-        wrap_folder_button(superseded_button, superseded_button_description, activate, tab.ss_folder, set_folder)
+        wrap_folder_buttons(superseded_button, superseded_button_description, activate, tab.ss_folder, set_folder)
 
         file_types_label = Label(tab)
         file_types_label.config(text="File types to update:", font=("Helvetica", 10, "bold"))
@@ -191,17 +196,36 @@ class DisciplineInterface:
             self.create_tab_content(frame)
             notebook.add(frame, text=tab)
             self.tab_dict[tab] = frame
-        notebook.place(x=275, y=20, height=550, width=1200)
+        notebook.place(x=400, y=20, height=550, width=1200)
         return notebook
 
+    def save_settings(self, label: Label):
+        global PROJECT_FOLDER_PATH, SETTINGS_FILE_PATH
+        try:
+            SETTINGS_FILE_PATH = get_settings_file_path(PROJECT_FOLDER_PATH)
+            create_project_data_folder(PROJECT_FOLDER_PATH)
+            for tab in TABS:
+                d_setting = DisciplineSetting(tab)
+                DISCIPLINE_SETTINGS[tab] = d_setting
+            SETTINGS_FILE_PATH = get_settings_file_path(PROJECT_FOLDER_PATH)
+            grab_discipline_settings(self, TABS)
+            create_setting_file(DISCIPLINE_SETTINGS, SETTINGS_FILE_PATH)
+            time = strftime("%D %T")
+            label.config(text="Settings saved at: {}".format(time), fg="blue", justify=LEFT,
+                         font=("Helvetica", 10, "italic"))
+        except NameError:
+            print("Please ensure you have selected a project folder before saving your settings.")
+        except AttributeError:
+            print("Please select settings for at least one discipline before saving.")
 
-def grab_discipline_settings(notebook: ttk.Notebook, tab_names: list):
+
+def grab_discipline_settings(discipline_interface: DisciplineInterface, tab_names: list):
     """Function for capturing the current state of discipline settings.
     To be used when settings are saved, or the update function is run"""
     for t_name in tab_names:
         # Update to access the variables from each discipline to create the DisciplineSetting objects
         # This function needs to be implemented by both the update button and the save settings button
-        tab = notebook.tab_dict[t_name]
+        tab = discipline_interface.tab_dict[t_name]
         active_button = tab.children['!checkbutton']
         active = active_button.var.get()
         if active:
@@ -253,12 +277,8 @@ def grab_discipline_settings(notebook: ttk.Notebook, tab_names: list):
             d_setting.file_types = file_types
 
 
-def count_active_disciplines(tabs):
-    pass
-
-
-def wrap_folder_button(button: ttk.Button, label: ttk.Label, active: BooleanVar,
-                       variable: StringVar, command):
+def wrap_folder_buttons(button: ttk.Button, label: Label, active: BooleanVar,
+                        variable: StringVar, command):
 
     def inner():
         result = command(label, active)
@@ -268,13 +288,29 @@ def wrap_folder_button(button: ttk.Button, label: ttk.Label, active: BooleanVar,
     button["command"] = inner
 
 
+def wrap_update_buttons(button: ttk.Button, label: Label, command):
+
+    def inner():
+        command(label)
+
+    button["command"] = inner
+
+
+def wrap_save_settings_buttons(discipline_interface, button: ttk.Button, label: Label, command):
+
+    def inner():
+        command(discipline_interface, label)
+
+    button["command"] = inner
+
+
 def lookup_discipline_name(frame_name: str):
     """Returns the name of the tab corresponding to the tkinter frame name"""
-    tab_count_plus_one = len(tabs) + 1
+    tab_count_plus_one = len(TABS) + 1
     tab_suffixes = [str(n) for n in range(2, tab_count_plus_one)]
     tab_suffixes.insert(0, "")
     frames = ['!frame{}'.format(i) for i in tab_suffixes]
-    tab_name_dict = {i: j for i, j in zip(frames, tabs)}
+    tab_name_dict = {i: j for i, j in zip(frames, TABS)}
     return tab_name_dict[frame_name]
 
 
@@ -295,25 +331,6 @@ def set_folder(label: Label, active: BooleanVar):
         print("Please ensure you select a valid directory and have set a project folder")
 
 
-def save_settings(label: Label):
-    global PROJECT_FOLDER_PATH, SETTINGS_FILE_PATH
-    try:
-        SETTINGS_FILE_PATH = get_settings_file_path(PROJECT_FOLDER_PATH)
-        create_project_data_folder(PROJECT_FOLDER_PATH)
-        for tab in tabs:
-            d_setting = DisciplineSetting(tab)
-            DISCIPLINE_SETTINGS[tab] = d_setting
-        SETTINGS_FILE_PATH = get_settings_file_path(PROJECT_FOLDER_PATH)
-        grab_discipline_settings(DISCIPLINE_FRAME, tabs)
-        create_setting_file(DISCIPLINE_SETTINGS, SETTINGS_FILE_PATH)
-        time = strftime("%D %T")
-        label.config(text="Settings saved: {}".format(time), fg="blue", font=("Helvetica", 10, "italic"))
-    except NameError:
-        print("Please ensure you have selected a project folder before saving your settings.")
-    except AttributeError:
-        print("Please select settings for at least one discipline before saving.")
-
-
 def load_settings_file():
     global SETTINGS_FILE_PATH
     try:
@@ -330,17 +347,19 @@ def set_project_folder(label: Label):
         if temp_path == "":
             label.config(text="Please select a valid project folder", fg="red", font=("Helvetica", 10))
         else:
+            label.config(text="1 folder set:\n{}".format(temp_path), justify=LEFT,
+                         fg="green", font=("Helvetica", 10))
             folder_name = extract_folder_name(temp_path)
             PROJECT_FOLDER_PATH = get_project_folder_path(folder_name)
-            label.config(text="1 folder set", fg="green", font=("Helvetica", 10))
     except FileNotFoundError:
         print("Please select a valid directory before proceeding.")
     except IndexError:
         print("Please select a valid directory before proceeding.")
 
 
-def update_drawings():
-    print("Updating drawings...")
+def update_drawings(label: Label):
+    global DISCIPLINE_COUNT
+    label.config(text="Update...", fg="gray", font=("Helvetica", 10, "italic"))
     for d_setting in DISCIPLINE_SETTINGS.values():
         if not d_setting.active:
                 pass
@@ -354,11 +373,11 @@ def update_drawings():
                                          PROJECT_FOLDER_PATH)
             DISCIPLINE_COUNT += 1
     time = strftime("%D %T")
-    print("Update completed at: {}".format(time))
+    label.config(text="Update completed for {} disciplines at:\n{}".format(DISCIPLINE_COUNT, time), justify=LEFT,
+                 fg="blue", font=("Helvetica", 10, "italic"))
 
 
-tabs = ["Structures", "Architecture", "Mechanical", "Electrical", "Hydraulic", "Fire", "Facades", "Civil",
-        "Geotechnical"]
+
 
 
 

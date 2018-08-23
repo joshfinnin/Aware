@@ -4,10 +4,10 @@ import tkinter.ttk as ttk
 from tkinter import *
 from tkinter import filedialog as fd
 from settings import *
-from update_functions import *
+from updates import *
 
-PROJECT_FOLDER_PATH = None
-SETTINGS_FILE_PATH = None
+PROJECT_FOLDER_PATH = ""
+SETTINGS_FILE_PATH = ""
 DISCIPLINE_SETTINGS = {}
 DISCIPLINE_COUNT = 0
 DISCIPLINE_FRAME = None
@@ -77,7 +77,7 @@ class DisciplineInterface:
             self.master.columnconfigure(increment, weight=1)
 
     @staticmethod
-    def create_tab_content(tab):
+    def create_tab_content(tab: ttk.Notebook.tab):
         """Use function to populate tabs with the necessary content"""
 
         activate = BooleanVar()
@@ -185,7 +185,7 @@ class DisciplineInterface:
         return notebook
 
 
-def grab_discipline_settings(notebook, tab_names):
+def grab_discipline_settings(notebook: ttk.Notebook, tab_names: list):
     """Function for capturing the current state of discipline settings.
     To be used when settings are saved, or the update function is run"""
     for t_name in tab_names:
@@ -193,7 +193,7 @@ def grab_discipline_settings(notebook, tab_names):
         # This function needs to be implemented by both the update button and the save settings button
         tab = notebook.tab_dict[t_name]
         active_button = tab.children['!checkbutton']
-        active = active_button.var
+        active = active_button.var.get()
         if active:
 
             prefix_raw = tab.children['!entry'].get()
@@ -203,6 +203,7 @@ def grab_discipline_settings(notebook, tab_names):
             delimiter = delimiter_raw.strip()
 
             d_setting = DISCIPLINE_SETTINGS[t_name]
+            d_setting.active = True
             d_setting.prefix = prefix  # Set prefix
             if delimiter != "":
                 d_setting.delimiter = delimiter  # Set delimiter
@@ -246,7 +247,8 @@ def count_active_disciplines(tabs):
     pass
 
 
-def wrap_folder_button(button, label, active, variable, command):
+def wrap_folder_button(button: ttk.Button, label: ttk.Label, active: BooleanVar,
+                       variable: StringVar, command):
 
     def inner():
         result = command(label, active)
@@ -256,7 +258,7 @@ def wrap_folder_button(button, label, active, variable, command):
     button["command"] = inner
 
 
-def lookup_discipline_name(frame_name):
+def lookup_discipline_name(frame_name: str):
     """Returns the name of the tab corresponding to the tkinter frame name"""
     tab_count_plus_one = len(tabs) + 1
     tab_suffixes = [str(n) for n in range(2, tab_count_plus_one)]
@@ -266,7 +268,7 @@ def lookup_discipline_name(frame_name):
     return tab_name_dict[frame_name]
 
 
-def set_folder(label, active):
+def set_folder(label: ttk.Label, active: BooleanVar):
     try:
         if active:
             folder = fd.askdirectory()  # Grab the folder
@@ -286,7 +288,12 @@ def set_folder(label, active):
 def save_settings():
     global PROJECT_FOLDER_PATH, SETTINGS_FILE_PATH
     try:
-        SETTINGS_FILE_PATH = create_settings_file_path(PROJECT_FOLDER_PATH)
+        SETTINGS_FILE_PATH = get_settings_file_path(PROJECT_FOLDER_PATH)
+        create_project_data_folder(PROJECT_FOLDER_PATH)
+        for tab in tabs:
+            d_setting = DisciplineSetting(tab)
+            DISCIPLINE_SETTINGS[tab] = d_setting
+        SETTINGS_FILE_PATH = get_settings_file_path(PROJECT_FOLDER_PATH)
         grab_discipline_settings(DISCIPLINE_FRAME, tabs)
         create_setting_file(DISCIPLINE_SETTINGS, SETTINGS_FILE_PATH)
     except NameError:
@@ -299,7 +306,7 @@ def load_settings_file():
     global SETTINGS_FILE_PATH
     try:
         SETTINGS_FILE_PATH = fd.askopenfilename()
-        load_discipline_settings_file(SETTINGS_FILE_PATH)
+        load_discipline_settings_file(SETTINGS_FILE_PATH, DISCIPLINE_SETTINGS)  # TODO:  Need to resolve this
     except FileNotFoundError:
         print("Please select a valid settings file to load from.")
 
@@ -310,11 +317,6 @@ def set_project_folder():
         temp_path = fd.askdirectory()
         folder_name = extract_folder_name(temp_path)
         PROJECT_FOLDER_PATH = get_project_folder_path(folder_name)
-        SETTINGS_FILE_PATH = create_settings_file_path(PROJECT_FOLDER_PATH)
-        create_project_data_folder(PROJECT_FOLDER_PATH)
-        for tab in tabs:
-            d_setting = DisciplineSetting(tab)
-            DISCIPLINE_SETTINGS[tab] = d_setting
     except FileNotFoundError:
         print("Please select a valid directory before proceeding.")
     except IndexError:
@@ -324,25 +326,21 @@ def set_project_folder():
 def update_drawings():
     print("Updating drawings...")
     for d_setting in DISCIPLINE_SETTINGS.values():
-        update_current_drawing_files(d_setting.src_folder,
-                                     d_setting.dst_folder,
-                                     d_setting.ss_folder,
-                                     d_setting.prefix,
-                                     d_setting.delimiter,
-                                     d_setting.file_types,
-                                     PROJECT_FOLDER_PATH)
+        if not d_setting.active:
+                pass
+        else:
+            update_current_drawing_files(d_setting.src_folder,
+                                         d_setting.dst_folder,
+                                         d_setting.ss_folder,
+                                         d_setting.prefix,
+                                         d_setting.delimiter,
+                                         d_setting.file_types,
+                                         PROJECT_FOLDER_PATH)
     print("Update completed.")
 
 
 tabs = ["Structures", "Architecture", "Mechanical", "Electrical", "Hydraulic", "Fire", "Facades", "Civil",
         "Geotechnical"]
 
-if __name__ == "__main__":
-    # Create the settings object
-    if not os.path.exists(PROJECT_DATA_FOLDER):
-        os.makedirs(PROJECT_DATA_FOLDER)
-    root = Tk()
-    update_frame = UpdateInterface(root)
-    DISCIPLINE_FRAME = DisciplineInterface(root, tabs)
-    root.mainloop()
+
 

@@ -1,4 +1,4 @@
-"""Module containing functions for updating the currently issued drawing folder"""
+"""Module containing functions for updating the currently issued drawing folder using Aware"""
 
 import os
 import shutil

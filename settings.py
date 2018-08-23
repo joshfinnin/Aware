@@ -111,7 +111,7 @@ def create_setting_file(discipline_settings: dict, settings_file_path: str):
             dst_folder = ds.dst_folder
             ss_folder = ds.ss_folder
             file_types = ds.file_types
-            file_types = "/".join(file_types)  # Ensure the list of file types is aggregated into a single string
+            file_types = "/".join(file_types)
             setting_vars = (name, prefix, delimiter, src_folder, dst_folder, ss_folder, file_types)
             setting_string = ",".join(setting_vars) + "\n"
             settings_lines.append(setting_string)

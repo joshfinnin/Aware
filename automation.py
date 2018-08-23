@@ -27,6 +27,6 @@ def update_all_drawing_folders():
 
 if __name__ == "__main__":
     update_all_drawing_folders()
-    sleep(2)
+    sleep(3)
     exit()
 

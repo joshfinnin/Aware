@@ -317,7 +317,7 @@ def lookup_discipline_name(frame_name: str):
 def set_folder(label: Label, active: BooleanVar):
     try:
         if active:
-            folder = fd.askdirectory()  # Grab the folder
+            folder = fd.askdirectory()
             if folder == "":
                 label.config(text="Please select a valid folder", fg="red")
             else:

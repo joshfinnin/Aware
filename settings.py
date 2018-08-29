@@ -14,6 +14,7 @@ class DisciplineSetting:
         self.active = False
         self.prefix = ""  # Used an empty string as giving None type was triggering the warning for non-string type
         self.delimiter = ""
+        self.exclusions = ""
         self.src_folder = ""
         self.dst_folder = ""
         self.ss_folder = ""
@@ -45,7 +46,7 @@ class DisciplineSetting:
             print("Prefix should be one or more characters of the alphabet. "
                   "Numbers and/or special characters should not be used.")
         else:
-            self.__prefix = prefix
+            self.__prefix = prefix.strip()
 
     @property
     def delimiter(self):
@@ -57,7 +58,16 @@ class DisciplineSetting:
             print("Delimiter should be one or more characters of the alphabet. "
                   "Numbers and/or special characters should not be used.")
         else:
-            self.__delimiter = delimiter
+            self.__delimiter = delimiter.strip()
+
+    @property
+    def exclusions(self):
+        return self.__exclusions
+
+    @exclusions.setter
+    def exclusions(self, exclusions):
+        split_exclusions = exclusions.split("#")
+        self.__exclusions = [e.strip() for e in split_exclusions]
 
     @property
     def src_folder(self):
@@ -99,7 +109,7 @@ def create_setting_file(discipline_settings: dict, settings_file_path: str):
     """Function for creating a setting file to retain data for all disciplines"""
     settings_file = open(settings_file_path, 'w+')
     settings_lines = []
-    headers = ("Discipline", "Prefix", "Delimiter", "Source", "Destination", "Superseded", "File Types")
+    headers = ("Discipline", "Prefix", "Delimiter", "Exclusions", "Source", "Destination", "Superseded", "File Types")
     headers_joined = ",".join(headers) + "\n"
     settings_lines.append(headers_joined)
     for ds in discipline_settings.values():
@@ -107,12 +117,14 @@ def create_setting_file(discipline_settings: dict, settings_file_path: str):
             name = ds.d_name
             prefix = ds.prefix
             delimiter = ds.delimiter
+            exclusions = ds.exclusions
+            exclusions = "#".join(exclusions)
             src_folder = ds.src_folder
             dst_folder = ds.dst_folder
             ss_folder = ds.ss_folder
             file_types = ds.file_types
             file_types = "/".join(file_types)
-            setting_vars = (name, prefix, delimiter, src_folder, dst_folder, ss_folder, file_types)
+            setting_vars = (name, prefix, delimiter, exclusions, src_folder, dst_folder, ss_folder, file_types)
             setting_string = ",".join(setting_vars) + "\n"
             settings_lines.append(setting_string)
     settings_file.writelines(settings_lines)
@@ -128,6 +140,7 @@ def load_discipline_settings_file(settings_file_path: str, settings_cache: set):
             name = ds["Discipline"]
             prefix = ds["Prefix"]
             delimiter = ds["Delimiter"]
+            exclusions = ds["Exclusions"]
             src_folder = ds["Source"]
             dst_folder = ds["Destination"]
             ss_folder = ds["Superseded"]
@@ -136,6 +149,7 @@ def load_discipline_settings_file(settings_file_path: str, settings_cache: set):
             d_setting = DisciplineSetting(name)
             d_setting.prefix = prefix
             d_setting.delimiter = delimiter
+            d_setting.exclusions = exclusions
             d_setting.src_folder = src_folder
             d_setting.dst_folder = dst_folder
             d_setting.ss_folder = ss_folder

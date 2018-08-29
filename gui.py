@@ -69,14 +69,14 @@ class UpdateInterface:
         update_description.place(x=0, y=375)
         wrap_update_buttons(update_button, update_description, update_drawings)
 
-        frame.place(x=0, y=0, width=400, height=500)
+        frame.place(x=0, y=0, width=400, height=675)
 
 
 class DisciplineInterface:
     def __init__(self, _root, tab_names):
         self.master = _root
         self.master.title("Aware")
-        self.master.minsize(1000, 570)
+        self.master.minsize(1000, 675)
         self.weight_cells()
         self.tab_names = tab_names
         self.tab_dict = {}
@@ -124,70 +124,81 @@ class DisciplineInterface:
                                      font=("Helvetica", 10))
         delimiter_description.place(x=20, y=150)
 
+        exclusion_label = Label(tab)
+        exclusion_label.config(text="Character Exclusions:", font=("Helvetica", 10, "bold"))
+        exclusion_label.place(x=20, y=190)
+        exclusion_field = ttk.Entry(tab)
+        exclusion_field.place(x=170, y=190)
+        exclusion_description = Label(tab)
+        exclusion_description.config(text="(i.e. if \'SK\' exclusion is provided, drawing \'S-SK-01-100\' would be "
+                                          "excluded from the search.\nMultiple entries can be provided by separating "
+                                          "with a \'#\' delimiter)", font=("Helvetica", 10), justify=LEFT)
+        exclusion_description.place(x=20, y=215)
+
         folder_label = Label(tab)
         folder_label.config(text="Folders:", font=("Helvetica", 10, "bold"))
-        folder_label.place(x=20, y=195)
+        folder_label.place(x=20, y=275)
 
         source_button = ttk.Button(tab)
         source_button.config(text="Set Source Folder")
-        source_button.place(x=20, y=220)
+        source_button.place(x=20, y=300)
         source_button_description = Label(tab)
         source_button_description.config(text="Folder to search for current drawings", font=("Helvetica", 10, "italic"))
-        source_button_description.place(x=170, y=220)
+        source_button_description.place(x=170, y=300)
         tab.src_folder = StringVar()
         wrap_folder_buttons(source_button, source_button_description, activate, tab.src_folder, set_folder)
 
         destination_button = ttk.Button(tab)
         destination_button.config(text="Set Destination Folder")
-        destination_button.place(x=20, y=250)
+        destination_button.place(x=20, y=325)
         destination_button_description = Label(tab)
         destination_button_description.config(text="Folder to store current drawings", font=("Helvetica", 10, "italic"))
-        destination_button_description.place(x=170, y=250)
+        destination_button_description.place(x=170, y=325)
         tab.dst_folder = StringVar()
         wrap_folder_buttons(destination_button, destination_button_description, activate, tab.dst_folder, set_folder)
 
         superseded_button = ttk.Button(tab)
         superseded_button.config(text="Set Superseded Folder")
-        superseded_button.place(x=20, y=280)
+        superseded_button.place(x=20, y=350)
         superseded_button_description = Label(tab)
         superseded_button_description.config(text="Folder to send superseded drawings", font=("Helvetica", 10, "italic"))
-        superseded_button_description.place(x=170, y=280)
+        superseded_button_description.place(x=170, y=350)
         tab.ss_folder = StringVar()
         wrap_folder_buttons(superseded_button, superseded_button_description, activate, tab.ss_folder, set_folder)
 
         file_types_label = Label(tab)
         file_types_label.config(text="File types to update:", font=("Helvetica", 10, "bold"))
-        file_types_label.place(x=20, y=335)
+        file_types_label.place(x=20, y=400)
 
         tab.pdf_bool = BooleanVar()
         cb_pdf = ttk.Checkbutton(tab)
         cb_pdf.config(text="PDF", variable=tab.pdf_bool)
-        cb_pdf.place(x=30, y=360)
+        cb_pdf.place(x=30, y=425)
 
         tab.ifc_bool = BooleanVar()
         cb_ifc = ttk.Checkbutton(tab)
         cb_ifc.config(text="IFC", variable=tab.ifc_bool)
-        cb_ifc.place(x=30, y=385)
+        cb_ifc.place(x=30, y=450)
 
         tab.dxf_bool = BooleanVar()
         cb_dxf = ttk.Checkbutton(tab)
         cb_dxf.config(text="DXF", variable=tab.dxf_bool)
-        cb_dxf.place(x=30, y=410)
+        cb_dxf.place(x=30, y=475)
 
         tab.dwg_bool = BooleanVar()
         cb_dwg = ttk.Checkbutton(tab)
         cb_dwg.config(text="DWG", variable=tab.dwg_bool)
-        cb_dwg.place(x=30, y=435)
+        cb_dwg.place(x=30, y=500)
 
         tab.jpeg_bool = BooleanVar()
         cb_jpeg = ttk.Checkbutton(tab)
         cb_jpeg.config(text="JPEG", variable=tab.jpeg_bool)
-        cb_jpeg.place(x=30, y=460)
+        cb_jpeg.place(x=30, y=525)
 
         tab.rhino_bool = BooleanVar()
         cb_3dm = ttk.Checkbutton(tab)
         cb_3dm.config(text="3DM", variable=tab.rhino_bool)
-        cb_3dm.place(x=30, y=485)
+        cb_3dm.place(x=30, y=550)
 
     def create_notebook(self):
         notebook = ttk.Notebook(master=self.master)
@@ -196,7 +207,7 @@ class DisciplineInterface:
             self.create_tab_content(frame)
             notebook.add(frame, text=tab)
             self.tab_dict[tab] = frame
-        notebook.place(x=400, y=20, height=550, width=1200)
+        notebook.place(x=400, y=20, height=675, width=1200)
         return notebook
 
     def save_settings(self, label: Label):
@@ -236,14 +247,14 @@ def grab_discipline_settings(discipline_interface: DisciplineInterface, tab_name
             delimiter_raw = tab.children['!entry2'].get()
             delimiter = delimiter_raw.strip()
 
+            exclusions = tab.children['!entry3'].get()
+
             d_setting = DISCIPLINE_SETTINGS[t_name]
             d_setting.active = True
             d_setting.prefix = prefix  # Set prefix
-            if delimiter != "":
-                d_setting.delimiter = delimiter  # Set delimiter
-            else:
-                d_setting.delimiter = ""
+            d_setting.delimiter = delimiter  # Set delimiter
 
+            d_setting.exclusions = exclusions
             d_setting.src_folder = tab.src_folder.get()
             d_setting.dst_folder = tab.dst_folder.get()
             d_setting.ss_folder = tab.ss_folder.get()
@@ -369,6 +380,7 @@ def update_drawings(label: Label):
                                          d_setting.ss_folder,
                                          d_setting.prefix,
                                          d_setting.delimiter,
+                                         d_setting.exclusions,
                                          d_setting.file_types,
                                          PROJECT_FOLDER_PATH)
             DISCIPLINE_COUNT += 1

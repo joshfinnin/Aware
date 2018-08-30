@@ -69,14 +69,14 @@ class UpdateInterface:
         update_description.place(x=0, y=375)
         wrap_update_buttons(update_button, update_description, update_drawings)
 
-        frame.place(x=0, y=0, width=400, height=675)
+        frame.place(x=0, y=0, width=300, height=675)
 
 
 class DisciplineInterface:
     def __init__(self, _root, tab_names):
         self.master = _root
         self.master.title("Aware")
-        self.master.minsize(1000, 675)
+        self.master.minsize(1200, 675)
         self.weight_cells()
         self.tab_names = tab_names
         self.tab_dict = {}
@@ -111,7 +111,7 @@ class DisciplineInterface:
         drawing_prefix_field.place(x=130, y=60)
         prefix_description = Label(tab)
         prefix_description.config(text="(i.e. for drawing \'S-01-100\', the prefix would be \'S\')",
-                                  font=("Helvetica", 10))
+                                  font=("Helvetica", 8))
         prefix_description.place(x=20, y=85)
 
         delimiter_label = Label(tab)
@@ -121,7 +121,7 @@ class DisciplineInterface:
         delimiter_field.place(x=150, y=125)
         delimiter_description = Label(tab)
         delimiter_description.config(text="(i.e. for drawing \'S-01-100[T01]\', the delimiter would be \'[\')",
-                                     font=("Helvetica", 10))
+                                     font=("Helvetica", 8))
         delimiter_description.place(x=20, y=150)
 
         exclusion_label = Label(tab)
@@ -130,10 +130,27 @@ class DisciplineInterface:
         exclusion_field = ttk.Entry(tab)
         exclusion_field.place(x=170, y=190)
         exclusion_description = Label(tab)
-        exclusion_description.config(text="(i.e. if \'SK\' exclusion is provided, drawing \'S-SK-01-100\' would be "
-                                          "excluded from the search.\nMultiple entries can be provided by separating "
-                                          "with a \'#\' delimiter)", font=("Helvetica", 10), justify=LEFT)
+        exclusion_description.config(text="(i.e. if \'SK\' exclusion is provided, drawing \'S-SK-01-100\' will be "
+                                          "excluded\nfrom the search.\nMultiple entries can be provided by separating "
+                                          "with a \'#\' delimiter)", font=("Helvetica", 8), justify=LEFT)
         exclusion_description.place(x=20, y=215)
+
+        black_list_label = Label(tab)
+        black_list_label.config(text="Black List", font=("Helvetica", 10, "bold"))
+        black_list_label.place(x=460, y=20)
+        black_list_text_box = Text(tab)
+        black_list_text_box.config(width=50, height=10, borderwidth=2,
+                                   bg="black", fg="white", font=("Helvetica", 10),
+                                   insertbackground="white")
+        black_list_text_box.place(x=460, y=45)
+        black_list_description = Label(tab)
+        black_list_description.config(text="(Drawings added to the black list will be excluded from the search,\n"
+                                           "even if they match all search criteria and possess no exclusion criteria.\n"
+                                           "Use the black list to override the search to ignore certain drawings.\n"
+                                           "Each drawing in the black list should be entered on a different line.)",
+                                      font=("Helvetica", 8),
+                                      justify=LEFT)
+        black_list_description.place(x=460, y=215)
 
         folder_label = Label(tab)
         folder_label.config(text="Folders:", font=("Helvetica", 10, "bold"))
@@ -207,7 +224,7 @@ class DisciplineInterface:
             self.create_tab_content(frame)
             notebook.add(frame, text=tab)
             self.tab_dict[tab] = frame
-        notebook.place(x=400, y=20, height=675, width=1200)
+        notebook.place(x=300, y=20, height=675, width=1000)
         return notebook
 
     def save_settings(self, label: Label):

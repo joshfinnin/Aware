@@ -15,6 +15,3 @@ if __name__ == "Aware":
     update_frame = UpdateInterface(root, discipline_frame)
     root.mainloop()
 
-
-# TODO: Add a 'black list' feature for drawings to be ignored, even if they match all search criteria.
-

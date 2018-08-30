@@ -19,6 +19,7 @@ class DisciplineSetting:
         self.dst_folder = ""
         self.ss_folder = ""
         self.file_types = []
+        self.black_list = []
 
     @property
     def d_name(self):
@@ -103,6 +104,17 @@ class DisciplineSetting:
 
     def update_setting(self, parameter, value):
         pass
+
+    @property
+    def black_list(self):
+        return self.__black_list
+
+    @black_list.setter
+    def black_list(self, black_list):
+        black_list_split = black_list.split("\n")
+        black_list_without_extensions = [drawing.split(".")[0] for drawing in black_list_split]
+        black_list_without_delimiters = [drawing.split(self.delimiter)[0] for drawing in black_list_without_extensions]
+        self.__black_list = black_list_without_delimiters
 
 
 def create_setting_file(discipline_settings: dict, settings_file_path: str):

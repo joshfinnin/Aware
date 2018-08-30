@@ -266,12 +266,15 @@ def grab_discipline_settings(discipline_interface: DisciplineInterface, tab_name
 
             exclusions = tab.children['!entry3'].get()
 
+            black_list = tab.children['!text'].get()
+
             d_setting = DISCIPLINE_SETTINGS[t_name]
             d_setting.active = True
             d_setting.prefix = prefix  # Set prefix
             d_setting.delimiter = delimiter  # Set delimiter
 
             d_setting.exclusions = exclusions
+            d_setting.black_list = black_list
             d_setting.src_folder = tab.src_folder.get()
             d_setting.dst_folder = tab.dst_folder.get()
             d_setting.ss_folder = tab.ss_folder.get()

@@ -14,7 +14,7 @@ def generate_drg_objects(directory: str, delimiter=""):
             filepath = dirpath + "/" + filename
             _, extension = os.path.splitext(filepath)
             if delimiter != "":
-                filename = filename.split(delimiter)[0]
+                filename = filename.split(delimiter)[0].strip()
             date = os.path.getctime(filepath)
             drg_obj = DrawingFile(filepath, filename, date, extension)
             yield drg_obj
@@ -30,11 +30,21 @@ def check_string_inclusion(list_of_fragments: list, string_to_search: str):
         return True
 
 
-def match_criteria(drg_obj: DrawingFile, drg_prefix: str, file_type: str, exclusions: list):
+def check_black_list(black_list, string_to_search):
+    if black_list == [""]:
+        return True
+    else:
+        for drawing in black_list:
+            if drawing == string_to_search:
+                return False
+        return True
+
+
+def match_criteria(drg_obj: DrawingFile, drg_prefix: str, file_type: str, exclusions: list, black_list: list):
     """Function returns a boolean indicating whether the drawing file matches the search criteria"""
     prefix_length = len(drg_prefix)
     if drg_obj.name[:prefix_length] == drg_prefix and drg_obj.extension == file_type and \
-            check_string_inclusion(exclusions, drg_obj.name):
+            check_string_inclusion(exclusions, drg_obj.name) and check_black_list(black_list, drg_obj.name):
         return True
     else:
         return False

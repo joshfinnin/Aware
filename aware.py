@@ -2,7 +2,7 @@
 
 __name__ = "Aware"
 __author__ = "Josh Finnin"
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 from gui import *
 

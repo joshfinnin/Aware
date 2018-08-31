@@ -2,9 +2,10 @@
 
 import os
 import shutil
-from drawing_classes import *
-import logs
 from time import sleep
+
+import logs
+from drawing_classes import *
 
 
 def generate_drg_objects(directory: str, delimiter=""):
@@ -31,11 +32,10 @@ def check_string_inclusion(list_of_fragments: list, string_to_search: str):
 
 
 def check_black_list(black_list, string_to_search):
-    if black_list == [""]:
-        return True
-    else:
         for drawing in black_list:
-            if drawing == string_to_search:
+            if drawing == "":
+                pass
+            elif drawing == string_to_search:
                 return False
         return True
 
@@ -51,7 +51,8 @@ def match_criteria(drg_obj: DrawingFile, drg_prefix: str, file_type: str, exclus
 
 
 def update_current_drawing_files(src_folder: str, dst_folder: str, ss_folder: str, drg_prefix: str,
-                                 delimiter: str, exclusions: list, file_types: list, project_folder_path: str):
+                                 delimiter: str, exclusions: list, black_list: list, file_types: list,
+                                 project_folder_path: str):
     """Function that finds and migrates current drawings to the current drawing folder and supersedes old drawings."""
     # Find and migrate current drawings from the outgoing folder to the current folder
     try:
@@ -60,7 +61,8 @@ def update_current_drawing_files(src_folder: str, dst_folder: str, ss_folder: st
             drg_objects = tuple(drg for drg in generate_drg_objects(src_folder, delimiter) if match_criteria(drg,
                                                                                                              drg_prefix,
                                                                                                              f_type,
-                                                                                                             exclusions))
+                                                                                                             exclusions,
+                                                                                                             black_list))
             drg_group_names = {drg.name for drg in drg_objects}
             for drg_group_name in drg_group_names:
                 matching_drgs = [drg for drg in drg_objects if drg.name == drg_group_name]
@@ -72,7 +74,8 @@ def update_current_drawing_files(src_folder: str, dst_folder: str, ss_folder: st
             drg_objects = tuple(drg for drg in generate_drg_objects(dst_folder, delimiter) if match_criteria(drg,
                                                                                                              drg_prefix,
                                                                                                              f_type,
-                                                                                                             exclusions))
+                                                                                                             exclusions,
+                                                                                                             black_list))
             drg_group_names = {drg.name for drg in drg_objects}
             for drg_group_name in drg_group_names:
                 matching_drgs = [drg for drg in drg_objects if drg.name == drg_group_name]
@@ -91,7 +94,8 @@ def update_current_drawing_files(src_folder: str, dst_folder: str, ss_folder: st
             for f_type in file_types:
                 drg_objects = tuple(
                     drg for drg in generate_drg_objects(src_folder, delimiter) if match_criteria(drg, drg_prefix,
-                                                                                                 f_type))
+                                                                                                 f_type, exclusions,
+                                                                                                 black_list))
                 drg_group_names = {drg.name for drg in drg_objects}
                 for drg_group_name in drg_group_names:
                     matching_drgs = [drg for drg in drg_objects if drg.name == drg_group_name]
@@ -102,7 +106,8 @@ def update_current_drawing_files(src_folder: str, dst_folder: str, ss_folder: st
                 # Find and supersede old drawings from the current folder to the superseded folder
                 drg_objects = tuple(
                     drg for drg in generate_drg_objects(dst_folder, delimiter) if match_criteria(drg, drg_prefix,
-                                                                                                 f_type))
+                                                                                                 f_type, exclusions,
+                                                                                                 black_list))
                 drg_group_names = {drg.name for drg in drg_objects}
                 for drg_group_name in drg_group_names:
                     matching_drgs = [drg for drg in drg_objects if drg.name == drg_group_name]

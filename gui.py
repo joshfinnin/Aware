@@ -1,12 +1,12 @@
 """Module containing classes for the Aware GUI"""
 
 import tkinter.ttk as ttk
+from time import strftime
 from tkinter import *
 from tkinter import filedialog as fd
+
 from settings import *
 from updates import *
-from time import strftime
-
 
 PROJECT_FOLDER_PATH = ""
 SETTINGS_FILE_PATH = ""
@@ -235,7 +235,6 @@ class DisciplineInterface:
             for tab in TABS:
                 d_setting = DisciplineSetting(tab)
                 DISCIPLINE_SETTINGS[tab] = d_setting
-            SETTINGS_FILE_PATH = get_settings_file_path(PROJECT_FOLDER_PATH)
             grab_discipline_settings(self, TABS)
             create_setting_file(DISCIPLINE_SETTINGS, SETTINGS_FILE_PATH)
             time = strftime("%D %T")
@@ -266,7 +265,7 @@ def grab_discipline_settings(discipline_interface: DisciplineInterface, tab_name
 
             exclusions = tab.children['!entry3'].get()
 
-            black_list = tab.children['!text'].get()
+            black_list = tab.children['!text'].get("1.0", END)
 
             d_setting = DISCIPLINE_SETTINGS[t_name]
             d_setting.active = True
@@ -401,6 +400,7 @@ def update_drawings(label: Label):
                                          d_setting.prefix,
                                          d_setting.delimiter,
                                          d_setting.exclusions,
+                                         d_setting.black_list,
                                          d_setting.file_types,
                                          PROJECT_FOLDER_PATH)
             DISCIPLINE_COUNT += 1

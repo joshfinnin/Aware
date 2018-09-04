@@ -12,8 +12,8 @@ PROJECT_FOLDER_PATH = ""
 SETTINGS_FILE_PATH = ""
 DISCIPLINE_SETTINGS = {}
 DISCIPLINE_COUNT = 0
-TABS = ["Structures", "Architecture", "Mechanical", "Electrical", "Hydraulic", "Fire", "Facades", "Civil",
-        "Geotechnical"]
+TABS = ["Structures", "Architecture 1", "Architecture 2", "Architecture 3", "Mechanical", "Electrical", "Hydraulic",
+        "Fire", "Facades", "Civil", "Geotechnical"]
 
 
 class UpdateInterface:

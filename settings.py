@@ -116,7 +116,6 @@ class DisciplineSetting:
         if self.delimiter != "":
             _black_list = [drawing.split(self.delimiter)[0] for drawing in _black_list]
         _black_list = [drawing.strip() for drawing in _black_list]
-        print(_black_list)
         self.__black_list = _black_list
 
 

@@ -112,10 +112,11 @@ class DisciplineSetting:
     @black_list.setter
     def black_list(self, black_list):
         _black_list = black_list.split("\n")
-        print(_black_list)
         _black_list = [drawing.split(".")[0] for drawing in _black_list]
         if self.delimiter != "":
             _black_list = [drawing.split(self.delimiter)[0] for drawing in _black_list]
+        _black_list = [drawing.strip() for drawing in _black_list]
+        print(_black_list)
         self.__black_list = _black_list
 
 
@@ -168,7 +169,7 @@ def load_discipline_settings_file(settings_file_path: str, settings_cache: set):
             d_setting = DisciplineSetting(name)
             d_setting.prefix = prefix
             d_setting.delimiter = delimiter
-            d_setting.exclusions = exclusions.split("#")
+            d_setting.exclusions = exclusions
             d_setting.black_list = "\n".join(black_list.split("#"))
             d_setting.src_folder = src_folder
             d_setting.dst_folder = dst_folder

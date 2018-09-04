@@ -35,7 +35,11 @@ def check_black_list(black_list, string_to_search):
         for drawing in black_list:
             if drawing == "":
                 pass
-            elif drawing == string_to_search:
+            else:
+                print("Black List Drawing: ", drawing)
+                print("String to search: ", string_to_search)
+            if drawing == string_to_search:
+                print("Match found.")
                 return False
         return True
 

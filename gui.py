@@ -12,8 +12,8 @@ PROJECT_FOLDER_PATH = ""
 SETTINGS_FILE_PATH = ""
 DISCIPLINE_SETTINGS = {}
 DISCIPLINE_COUNT = 0
-TABS = ["Structures", "Architecture 1", "Architecture 2", "Architecture 3", "Mechanical", "Electrical", "Hydraulic",
-        "Fire", "Facades", "Civil", "Geotechnical"]
+TABS = ["Architecture 1", "Architecture 2", "Architecture 3", "Civil", "Electrical", "Facades", "Fire", "Hydraulic",
+        "Landscape Arch", "Mechanical", "Structures"]
 
 
 class UpdateInterface:
@@ -250,8 +250,6 @@ def grab_discipline_settings(discipline_interface: DisciplineInterface, tab_name
     """Function for capturing the current state of discipline settings.
     To be used when settings are saved, or the update function is run"""
     for t_name in tab_names:
-        # Update to access the variables from each discipline to create the DisciplineSetting objects
-        # This function needs to be implemented by both the update button and the save settings button
         tab = discipline_interface.tab_dict[t_name]
         active_button = tab.children['!checkbutton']
         active = active_button.var.get()
@@ -407,9 +405,6 @@ def update_drawings(label: Label):
     time = strftime("%D %T")
     label.config(text="Update completed for {} disciplines at:\n{}".format(DISCIPLINE_COUNT, time), justify=LEFT,
                  fg="blue", font=("Helvetica", 10, "italic"))
-
-
-
 
 
 

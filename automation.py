@@ -15,7 +15,7 @@ def update_all_drawing_folders():
             settings_file_path = get_settings_file_path(project_folder_path)
             load_discipline_settings_file(settings_file_path, DISCIPLINE_SETTINGS)
             update_count = 0
-            print("Updating current drawings for project {}".format(dirname))
+            print("Updating current drawings for project {}...".format(dirname))
             for d_setting in DISCIPLINE_SETTINGS:
                 update_current_drawing_files(d_setting.src_folder, d_setting.dst_folder,
                                              d_setting.ss_folder, d_setting.prefix,

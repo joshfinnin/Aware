@@ -112,7 +112,7 @@ class DisciplineSetting:
     @black_list.setter
     def black_list(self, black_list):
         _black_list = black_list.split("\n")
-        _black_list = [drawing.split(".")[0] for drawing in _black_list]
+        _black_list = [drawing.split(".")[0].strip() for drawing in _black_list]
         if self.delimiter != "":
             _black_list = [drawing.split(self.delimiter)[0] for drawing in _black_list]
         _black_list = [drawing.strip() for drawing in _black_list]

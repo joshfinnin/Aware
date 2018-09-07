@@ -17,18 +17,25 @@ TABS = ["Architecture 1", "Architecture 2", "Architecture 3", "Civil", "Electric
 
 
 class UpdateInterface:
-    def __init__(self, _root, discipline_interface):
+    def __init__(self, _root, discipline_interface, author, version):
         self.master = _root
         self.discipline_interface = discipline_interface
+        self.author = author
+        self.version = version
         self.create_frame()
 
     def create_frame(self):
         frame = ttk.Frame(self.master)
         frame.config(borderwidth=15)
+        app_info = Label(frame)
+        app_info.config(text="Author: {} | Version: {}\nDisclaimer: Beta release.  "
+                             "Use with caution.".format(self.author, self.version),
+                        font=("Helvetica", 8, "italic"), justify=LEFT, fg="gray")
+        app_info.place(x=0, y=0)
         label = Label(frame)
         label.config(text="Updates", font=('Helvetica', 14, 'bold'))
         label.config(anchor=CENTER)
-        label.place(x=0, y=0, width=80, height=40)
+        label.place(x=0, y=40, width=80, height=40)
 
         project_folder_button = ttk.Button(frame)
         project_folder_button.config(text="Set project folder")

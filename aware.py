@@ -2,7 +2,7 @@
 
 __name__ = "Aware"
 __author__ = "Josh Finnin"
-__version__ = "1.2.4"
+__version__ = "1.2.5"
 
 from gui import *
 
@@ -12,6 +12,6 @@ if __name__ == "Aware":
         os.makedirs(PROJECT_DATA_FOLDER)
     root = Tk()
     discipline_frame = DisciplineInterface(root, TABS)
-    update_frame = UpdateInterface(root, discipline_frame)
+    update_frame = UpdateInterface(root, discipline_frame, __author__, __version__)
     root.mainloop()
 

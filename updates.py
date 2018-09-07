@@ -5,7 +5,7 @@ import shutil
 from time import sleep
 
 import logs
-from drawing_classes import *
+from drawing_classes import DrawingFile, DrawingGroup
 
 
 def generate_drg_objects(directory: str, delimiter=""):
@@ -48,23 +48,12 @@ def match_criteria(drg_obj: DrawingFile, drg_prefix: str, file_type: str, exclus
         return False
 
 
-def match_criteria_superseded(drg_obj: DrawingFile, drg_prefix: str, file_type: str, exclusions: list):
-    """Function returns a boolean indicating whether the drawing file matches the search criteria"""
-    prefix_length = len(drg_prefix)
-    if drg_obj.name[:prefix_length] == drg_prefix and drg_obj.extension == file_type and \
-            check_string_inclusion(exclusions, drg_obj.name):
-        return True
-    else:
-        return False
-
-
 def update_current_drawing_files(src_folder: str, dst_folder: str, ss_folder: str, drg_prefix: str,
                                  delimiter: str, exclusions: list, black_list: list, file_types: list,
                                  project_folder_path: str):
     """Function that finds and migrates current drawings to the current drawing folder and supersedes old drawings."""
     # Find and migrate current drawings from the outgoing folder to the current folder
     try:
-
         for f_type in file_types:
             drg_objects = tuple(drg for drg in generate_drg_objects(src_folder, delimiter) if match_criteria(
                 drg,
@@ -78,14 +67,19 @@ def update_current_drawing_files(src_folder: str, dst_folder: str, ss_folder: st
                 matching_drgs = [drg for drg in drg_objects if drg.name == drg_group_name]
                 drg_group = DrawingGroup(matching_drgs)
                 current_drawing = drg_group.get_current_drawing()
-                shutil.copy(current_drawing.filepath, dst_folder)
+                try:
+                    shutil.copy(current_drawing.filepath, dst_folder)
+                except OSError:
+                    print("OSError occurred for drawing {}.  This could be a permission error.".format(
+                        current_drawing.name))
 
         # Find and supersede old drawings from the current folder to the superseded folder
-            drg_objects = tuple(drg for drg in generate_drg_objects(dst_folder, delimiter) if match_criteria_superseded(
+            drg_objects = tuple(drg for drg in generate_drg_objects(dst_folder, delimiter) if match_criteria(
                 drg,
                 drg_prefix,
                 f_type,
-                exclusions))
+                exclusions,
+                black_list))
 
             drg_group_names = {drg.name for drg in drg_objects}
             for drg_group_name in drg_group_names:
@@ -94,10 +88,10 @@ def update_current_drawing_files(src_folder: str, dst_folder: str, ss_folder: st
                 superseded_drawings = drg_group.get_superseded_drawings()
                 if not check_black_list(black_list, drg_group_name):
                     for bl_drg in drg_group.drawing_list:
-                        shutil.move(bl_drg.filepath, ss_folder + "\\" + bl_drg.name + bl_drg.extension)
+                        shutil.move(bl_drg.filepath, ss_folder + "/" + bl_drg.name + bl_drg.extension)
                 else:
                     for ss_drg in superseded_drawings:
-                        shutil.move(ss_drg.filepath, ss_folder + "\\" + ss_drg.name + ss_drg.extension)
+                        shutil.move(ss_drg.filepath, ss_folder + "/" + ss_drg.name + ss_drg.extension)
 
         # Update log file to reflect last update
         log_file_path = logs.get_log_file_path(project_folder_path)

@@ -5,6 +5,7 @@ from time import strftime
 from tkinter import *
 from tkinter import filedialog as fd
 
+import logs
 from settings import *
 from updates import *
 

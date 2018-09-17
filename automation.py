@@ -1,7 +1,9 @@
 """Module for automated updates of the Current (Issued) folder based on previously defined settings."""
 
 from os import walk
+from time import sleep
 
+import logs
 from settings import *
 from updates import *
 

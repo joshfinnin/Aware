@@ -409,6 +409,8 @@ def update_drawings(label: Label):
                                          d_setting.file_types,
                                          PROJECT_FOLDER_PATH)
             DISCIPLINE_COUNT += 1
+    log_file_path = logs.get_log_file_path(PROJECT_FOLDER_PATH)
+    logs.update_log(log_file_path)
     time = strftime("%D %T")
     label.config(text="Update completed for {} disciplines at:\n{}".format(DISCIPLINE_COUNT, time), justify=LEFT,
                  fg="blue", font=("Helvetica", 10, "italic"))

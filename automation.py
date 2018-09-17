@@ -24,6 +24,8 @@ def update_all_drawing_folders():
                 update_count += 1
                 print("{} disciplines updated".format(update_count))
             print("Drawings updated for project {}".format(dirname))
+            log_file_path = logs.get_log_file_path(project_folder_path)
+            logs.update_log(log_file_path)
     print('Drawing update complete.')
 
 

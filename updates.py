@@ -67,8 +67,8 @@ def update_current_drawing_files(src_folder: str, dst_folder: str, ss_folder: st
             try:
                 shutil.copy(current_drawing.filepath, dst_folder)
             except OSError:
-                print("OSError occurred for drawing {}.  This could be a permission error.".format(
-                    current_drawing.name))
+                print("OSError occurred for drawing {} while trying to copy.\n"
+                      "This could be a permission error; someone may have the file open.".format(current_drawing.name))
 
     # Find and supersede old drawings from the current folder to the superseded folder
         drg_objects = tuple(drg for drg in generate_drg_objects(dst_folder, delimiter) if match_criteria(
@@ -87,8 +87,8 @@ def update_current_drawing_files(src_folder: str, dst_folder: str, ss_folder: st
                 try:
                     shutil.move(ss_drg.filepath, ss_folder + "/" + ss_drg.name + ss_drg.extension)
                 except OSError:
-                    print("OSError occurred for drawing {}.  This could be a permission error.".format(
-                        ss_drg.name))
+                    print("OSError occurred for drawing {} while trying to supersede.\n"
+                          "This could be a permission error; someone may have the file open.".format(ss_drg.name))
 
 
 

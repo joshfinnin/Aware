@@ -13,7 +13,7 @@ class DisciplineSetting:
         self.d_name = d_name
         self.active = False
         self.prefix = ""  # Used an empty string as giving None type was triggering the warning for non-string type
-        self.delimiter = ""
+        self.delimiter = "!"
         self.exclusions = ""
         self.src_folder = ""
         self.dst_folder = ""
@@ -107,16 +107,51 @@ class DisciplineSetting:
 
     @property
     def black_list(self):
+        """The getter should return the plain string version of the black_list (i.e. as it is stored internally).
+        If we want to access the black list as a string, we should then use the get_black_list_as_list method.
+        Improves the consistency of the interface, makes the program less breakable."""
+        # Ok, as per identified problem before, we will consistently return a string when this method is called.
         return self.__black_list
 
     @black_list.setter
     def black_list(self, black_list):
-        _black_list = black_list.split("\n")
-        _black_list = [drawing.split(".")[0].strip() for drawing in _black_list]
-        if self.delimiter != "":
-            _black_list = [drawing.split(self.delimiter)[0] for drawing in _black_list]
-        _black_list = [drawing.strip() for drawing in _black_list]
-        self.__black_list = _black_list
+        """We should always store the black list as a string.  Any argument provided should be parsed should
+        to a string.  This will make the interface less breakable"""
+        if isinstance(black_list, str):
+            _black_list = black_list.strip().split("\n")  # Remove whitespace from lines
+            _black_list = [fragment.split(".")[0] for fragment in _black_list]  # Remove extension
+            _black_list = [fragment.split(self.delimiter)[0].strip() for fragment in _black_list]  # Remove delimiter
+            _black_list = "#".join(_black_list)  # Join the fragments together with a delimiter
+            self.__black_list = _black_list
+        elif isinstance(black_list, list):
+            _black_list = [item.split("\n") for item in black_list]
+            self.__black_list = "#".join(_black_list)
+        else:
+            self.__black_list = ""
+        # I am hoping this is all we have to do to for storing it internally.  The below code is left as a vestige
+        # in case I have completely broken how this is working
+        # if isinstance(black_list, str):
+        #     black_list.strip()
+        #     _black_list = black_list
+        # _black_list = black_list.split("\n")
+        # _black_list = [drawing.split(".")[0].strip() for drawing in _black_list]
+        # if self.delimiter != "":
+        #     _black_list = [drawing.split(self.delimiter)[0] for drawing in _black_list]
+        # _black_list = [drawing.strip() for drawing in _black_list]
+        # self.__black_list = _black_list
+        # print("Type of black list (2):", type(self.__black_list))
+
+    def get_black_list_as_list(self) -> list:
+        """Function for returning the black list as a list.
+        Can use the setter method to ensure that we can feed in data of any type, but it will always store
+        the black list internally as a string.  This method will be called to convert that string to a list,
+        if we need it"""
+        # Ok, let's solve this problem
+        _black_list = [item.strip() for item in self.__black_list.split("#")]  # Remove unnecessary whitespace
+        _black_list = [item.split(".")[0] for item in _black_list]  # Get string chunk before the extension
+        _black_list = [item.split(self.delimiter)[0].strip() for item in _black_list]  # Get string before the delimiter
+        # I think this should have simplified things a lot
+        return _black_list
 
 
 def create_setting_file(discipline_settings: dict, settings_file_path: str):
@@ -135,7 +170,10 @@ def create_setting_file(discipline_settings: dict, settings_file_path: str):
             exclusions = ds.exclusions
             exclusions = "#".join(exclusions)
             black_list = ds.black_list
-            black_list = "#".join(black_list)
+            # TODO: Think we can remove the next 2 lines, as we have accomplished
+            # if black_list == ["", ""]:
+            #     black_list = [""]
+            # black_list = "#".join(black_list)
             src_folder = ds.src_folder
             dst_folder = ds.dst_folder
             ss_folder = ds.ss_folder
@@ -149,7 +187,7 @@ def create_setting_file(discipline_settings: dict, settings_file_path: str):
     settings_file.close()
 
 
-def load_discipline_settings_file(settings_file_path: str, settings_cache: set):
+def load_discipline_settings_file(settings_file_path: str, settings_cache: dict):
     """Function for loading settings data contained in a settings file.
     Creates and populates Project objects with the necessary data from the settings file."""
     with open(settings_file_path, 'r') as settings_file:
@@ -169,17 +207,27 @@ def load_discipline_settings_file(settings_file_path: str, settings_cache: set):
             d_setting.prefix = prefix
             d_setting.delimiter = delimiter
             d_setting.exclusions = exclusions
-            d_setting.black_list = "\n".join(black_list.split("#"))
+            # TODO: Let's remove the following (hopefully unnecessary) code and test what happens
+            # if len(black_list) > 1:
+            #     _black_list = "\n".join(black_list.split("#"))
+            #     d_setting.black_list = _black_list
+            # elif black_list == ["", ""]:
+            #     d_setting.black_list = ""
+            # elif black_list == "#":
+            #     d_setting.black_list = ""
+            # else:
+            #     _black_list = black_list
+            d_setting.black_list = black_list
             d_setting.src_folder = src_folder
             d_setting.dst_folder = dst_folder
             d_setting.ss_folder = ss_folder
             d_setting.file_types = file_types
-            settings_cache.add(d_setting)
+            settings_cache[name] = d_setting
 
 
-def extract_folder_name(path: str):
+def extract_folder_name(_path: str):
     """Takes the BIM_CDE project folder path. Returns the project folder name."""
-    fragments = path.split("/")
+    fragments = _path.split("/")
     folder = fragments[2]
     return folder
 

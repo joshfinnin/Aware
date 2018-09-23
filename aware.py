@@ -2,7 +2,7 @@
 
 __name__ = "Aware"
 __author__ = "Josh Finnin"
-__version__ = "0.9.5"
+__version__ = "0.9.8"
 
 from gui import *
 
@@ -14,4 +14,5 @@ if __name__ == "Aware":
     discipline_frame = DisciplineInterface(root, TABS)
     update_frame = UpdateInterface(root, discipline_frame, __author__, __version__)
     root.mainloop()
+
 

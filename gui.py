@@ -58,13 +58,18 @@ class UpdateInterface:
         save_settings_description = Label(frame)
         save_settings_description.config(text="Unsaved", font=("Helvetica", 10, "italic"), justify=LEFT)
         save_settings_description.place(x=0, y=225)
-        wrap_save_settings_buttons(self.discipline_interface, save_settings_button, save_settings_description,
-                                   DisciplineInterface.save_settings)
+        wrap_settings_buttons(self.discipline_interface, save_settings_button, save_settings_description,
+                              DisciplineInterface.save_settings)
 
         load_settings_button = ttk.Button(frame)
         load_settings_button.config(text="Load settings")
         load_settings_button.config(command=load_settings_file)
         load_settings_button.place(x=0, y=260)
+        load_settings_description = Label(frame)
+        load_settings_description.config(text="", font=("Helvetica", 10, "italic"), justify=LEFT)
+        load_settings_description.place(x=0, y=290)
+        wrap_settings_buttons(self.discipline_interface, load_settings_button, load_settings_description,
+                              load_settings_file)
 
         update_label = Label(frame)
         update_label.config(text="Update drawing folders", font=("Helvetica", 10, "bold"))
@@ -262,23 +267,19 @@ def grab_discipline_settings(discipline_interface: DisciplineInterface, tab_name
         active_button = tab.children['!checkbutton']
         active = active_button.var.get()
         if active:
-
             prefix_raw = tab.children['!entry'].get()
             prefix = prefix_raw.strip()
-
             delimiter_raw = tab.children['!entry2'].get()
             delimiter = delimiter_raw.strip()
-
             exclusions = tab.children['!entry3'].get()
-
             black_list = tab.children['!text'].get("1.0", END)
-
             d_setting = DISCIPLINE_SETTINGS[t_name]
             d_setting.active = True
             d_setting.prefix = prefix  # Set prefix
             d_setting.delimiter = delimiter  # Set delimiter
 
             d_setting.exclusions = exclusions
+            # TODO: Ensure that when the black list here is set, we haven't broken the interface
             d_setting.black_list = black_list
             d_setting.src_folder = tab.src_folder.get()
             d_setting.dst_folder = tab.dst_folder.get()
@@ -313,6 +314,76 @@ def grab_discipline_settings(discipline_interface: DisciplineInterface, tab_name
             d_setting.file_types = file_types
 
 
+def set_discipline_settings(discipline_interface: DisciplineInterface, tab_names: list):
+    """Function for setting the state of the gui to match the settings in the setting file"""
+    for t_name in tab_names:
+        tab = discipline_interface.tab_dict[t_name]
+        d_setting = DISCIPLINE_SETTINGS[t_name]
+        # Set discipline to active
+        active_button = tab.children['!checkbutton']
+        active_button.var.set(True)
+
+        # Fill in prefix field
+        prefix_field = tab.children['!entry']
+        prefix_field.delete(0, END)
+        prefix_field.insert(END, d_setting.prefix)
+        # Fill in delimiter field
+        delimiter_field = tab.children['!entry2']
+        delimiter_field.delete(0, END)
+        delimiter_field.insert(END, d_setting.delimiter)
+        # Fill in exclusion field
+        exclusion_field = tab.children['!entry3']
+        exclusion_field.delete(0, END)
+        exclusion_field.insert(END, d_setting.exclusions)
+        # Fill in folder fields
+        # Source folder
+        source_button_description = tab.children['!label10']
+        tab.src_folder.set(d_setting.src_folder)
+        source_button_description.config(text="One folder set: {}".format(tab.src_folder.get()), fg="green")
+        # Destination folder
+        destination_button_description = tab.children['!label11']
+        tab.dst_folder.set(d_setting.dst_folder)
+        destination_button_description.config(text="One folder set: {}".format(tab.dst_folder.get()), fg="green")
+        # Superseded folder
+        superseded_button_description = tab.children['!label12']
+        tab.ss_folder.set(d_setting.ss_folder)
+        superseded_button_description.config(text="One folder set: {}".format(tab.ss_folder.get()), fg="green")
+        # Fill in black list field
+        black_list_field = tab.children['!text']
+        black_list_field.delete("1.0", END)
+        # TODO: Ensure that when the black list here is set, we haven't broken the interface
+        black_list = d_setting.black_list
+        # Think we need the below line to ensure that the black list is readable in the interface
+        # (I.e. each drawing is sitting on it's own line)
+        black_list = "\n".join(black_list.split("#"))
+        black_list_field.insert(END, black_list)
+        # Fill in file type fields
+
+        if '.pdf' in d_setting.file_types:
+            #pdf_button = tab.children['!checkbutton2']
+            tab.pdf_bool.set(True)
+
+        if '.ifc' in d_setting.file_types:
+            #ifc_button = tab.children['!checkbutton3']
+            tab.ifc_bool.set(True)
+
+        if '.dxf' in d_setting.file_types:
+            #dxf_button = tab.children['!checkbutton4']
+            tab.dxf_bool.set(True)
+
+        if '.dwg' in d_setting.file_types:
+            #dwg_button = tab.children['!checkbutton5']
+            tab.dwg_bool.set(True)
+
+        if '.jpeg' in d_setting.file_types:
+            #jpeg_button = tab.children['!checkbutton6']
+            tab.dwg_bool.set(True)
+
+        if '.3dm' in d_setting.file_types:
+            #rhino_button = tab.children['!checkbutton7']
+            tab.rhino_bool.set(True)
+
+
 def wrap_folder_buttons(button: ttk.Button, label: Label, active: BooleanVar,
                         variable: StringVar, command):
 
@@ -332,7 +403,7 @@ def wrap_update_buttons(button: ttk.Button, label: Label, command):
     button["command"] = inner
 
 
-def wrap_save_settings_buttons(discipline_interface, button: ttk.Button, label: Label, command):
+def wrap_settings_buttons(discipline_interface, button: ttk.Button, label: Label, command):
 
     def inner():
         command(discipline_interface, label)
@@ -367,11 +438,14 @@ def set_folder(label: Label, active: BooleanVar):
         print("Please ensure you select a valid directory and have set a project folder")
 
 
-def load_settings_file():
+def load_settings_file(discipline_interface: DisciplineInterface, label: Label):
     global SETTINGS_FILE_PATH
     try:
         SETTINGS_FILE_PATH = fd.askopenfilename()
         load_discipline_settings_file(SETTINGS_FILE_PATH, DISCIPLINE_SETTINGS)  # TODO:  Need to resolve this
+        tabs_in_file = [s for s in DISCIPLINE_SETTINGS.keys()]
+        set_discipline_settings(discipline_interface, tabs_in_file)
+        label.config(text="Settings loaded.", fg="blue")
     except FileNotFoundError:
         print("Please select a valid settings file to load from.")
 
@@ -406,7 +480,8 @@ def update_drawings(label: Label):
                                          d_setting.prefix,
                                          d_setting.delimiter,
                                          d_setting.exclusions,
-                                         d_setting.black_list,
+                                         # TODO: Ensure that we haven't broken the interface here with the black list
+                                         d_setting.get_black_list_as_list(),
                                          d_setting.file_types,
                                          PROJECT_FOLDER_PATH)
             DISCIPLINE_COUNT += 1

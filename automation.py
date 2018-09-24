@@ -21,7 +21,8 @@ def update_all_drawing_folders():
             for d_setting in DISCIPLINE_SETTINGS:
                 update_current_drawing_files(d_setting.src_folder, d_setting.dst_folder,
                                              d_setting.ss_folder, d_setting.prefix,
-                                             d_setting.delimiter, d_setting.exclusions, d_setting.black_list,
+                                             d_setting.delimiter, d_setting.exclusions,
+                                             d_setting.get_black_list_as_list(),
                                              d_setting.file_types, project_folder_path)
                 update_count += 1
                 print("{} disciplines updated".format(update_count))
